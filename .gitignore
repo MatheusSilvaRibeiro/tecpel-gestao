@@ -1,0 +1,13 @@
+node_modules/
+node_modules_incomplete/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.idea/
+.vscode/
+backend/prisma/dev.db*
