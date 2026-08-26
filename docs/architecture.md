@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-O TecPel Gestão é um monorepo TypeScript gerenciado por pnpm. Ele separa a aplicação web, a API HTTP e a persistência relacional. A implementação atual contém a fundação técnica e ainda não possui modelos ou regras de negócio.
+O TecPel Gestão é um monorepo TypeScript gerenciado por pnpm. Ele separa a aplicação web, a API HTTP e a persistência relacional. O backend possui autenticação modular; os demais módulos de negócio ainda serão implementados.
 
 ```mermaid
 flowchart LR
@@ -22,11 +22,11 @@ O diretório `frontend/` contém a SPA em React, compilada pelo Vite. React Rout
 
 ### Backend
 
-O diretório `backend/` contém a API Express. `src/app.ts` configura middlewares, a rota de saúde e a resposta para rotas inexistentes; `src/server.ts` inicia o servidor; `src/config/` valida configurações de ambiente com Zod. Regras de negócio futuras devem permanecer independentes do transporte HTTP.
+O diretório `backend/` contém a API Express. `src/app.ts` compõe middlewares, rotas, dependências e tratamento centralizado de erros; `src/server.ts` inicia o servidor; `src/config/` valida configurações de ambiente com Zod. O módulo `src/modules/auth/` separa rotas, autenticação, caso de uso de login, criptografia, JWT e contrato de persistência. A implementação Prisma fica em `src/infrastructure/`.
 
 ### Banco de dados
 
-PostgreSQL é o banco relacional. O Prisma será o único ponto de acesso da aplicação ao banco. O schema está configurado, mas ainda não contém modelos de negócio. Toda alteração futura de schema deve ser versionada por migrations.
+PostgreSQL é o banco relacional e Prisma é o ponto de acesso da aplicação. O schema contém `User` e as roles `ADMIN` e `VENDEDOR`; alterações são versionadas por migrations. O seed idempotente mantém o administrador inicial com senha armazenada como hash bcrypt.
 
 ### Docker
 
@@ -37,8 +37,8 @@ O Docker Compose organiza três serviços: `frontend`, `backend` e `postgres`. H
 1. O navegador carrega a aplicação React.
 2. O frontend envia requisições HTTP para a API configurada em `VITE_API_URL`.
 3. O Express recebe a requisição, aplica os middlewares e encaminha para a rota adequada.
-4. Futuras regras de negócio serão executadas em serviços ou casos de uso.
-5. O acesso aos dados ocorrerá por repositórios baseados no Prisma.
+4. Regras de aplicação são executadas em serviços ou casos de uso.
+5. O acesso aos dados ocorre por implementações de persistência baseadas no Prisma.
 6. A API devolve uma resposta JSON e o frontend atualiza a interface.
 
 ## Organização das pastas
@@ -67,3 +67,7 @@ tecpel-gestao/
 - **Infraestrutura:** implementa persistência, Prisma e integrações externas.
 
 As camadas devem ser criadas incrementalmente quando houver necessidade real, conforme o [ADR 0002](adr/0002-project-structure.md).
+
+## Autenticação
+
+O login usa `username` e senha verificada com bcrypt (cost factor 12). A API emite JWT com apenas o identificador no `sub`, expiração inicial de 8 horas e armazenamento exclusivo em cookie HttpOnly. O middleware valida token, existência e estado ativo do usuário em cada acesso protegido. Não há refresh token ou blacklist nesta fase. Consulte o [ADR 0003](adr/0003-auth-strategy.md).
