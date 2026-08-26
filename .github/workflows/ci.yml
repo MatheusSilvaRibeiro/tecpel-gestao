@@ -39,6 +39,9 @@ jobs:
       - name: Testar backend
         run: pnpm --filter @tecpel/backend test
 
+      - name: Testar frontend
+        run: pnpm --filter @tecpel/frontend test
+
       - name: Testar integração com PostgreSQL
         run: pnpm --filter @tecpel/backend test:integration
 
