@@ -28,6 +28,14 @@ services:
       NODE_ENV: development
       PORT: 3333
       DATABASE_URL: ${DATABASE_URL:-postgresql://tecpel:tecpel@postgres:5432/tecpel?schema=public}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET deve ser definido no arquivo .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-tecpel_auth}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrador}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@tecpel.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
     ports:
       - '${BACKEND_PORT:-3333}:3333'
     volumes:
