@@ -42,6 +42,20 @@ pnpm dev
 
 O cliente web deve enviar requests com credenciais. O token não é retornado no body e não deve ser salvo em `localStorage`.
 
+## Autenticação no frontend
+
+A rota `/login` autentica pela API e o cookie HttpOnly permanece sob controle do navegador. A sessão é restaurada por `/auth/me` e mantida no cache do TanStack Query, sem armazenar JWT em `localStorage` ou `sessionStorage`.
+
+- `/login`: rota pública exclusiva para usuários sem sessão.
+- `/dashboard`: rota protegida e placeholder da futura área de indicadores.
+- Logout: encerra a sessão remota, limpa o cache local e retorna ao login.
+
+Para executar os testes do fluxo de autenticação no frontend:
+
+```bash
+pnpm --filter @tecpel/frontend test
+```
+
 ## Testes de integração
 
 A suíte de integração usa Testcontainers para iniciar um PostgreSQL 17 isolado e descartável, aplica a migration real e valida Prisma, persistência, autenticação e seed. Docker deve estar em execução.

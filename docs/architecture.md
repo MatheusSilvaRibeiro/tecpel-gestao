@@ -18,7 +18,7 @@ flowchart LR
 
 ### Frontend
 
-O diretório `frontend/` contém a SPA em React, compilada pelo Vite. React Router controla a navegação e TanStack Query está configurado para o futuro consumo da API. Tailwind CSS e shadcn/ui sustentam a camada visual. O frontend não acessa o banco diretamente.
+O diretório `frontend/` contém a SPA em React, compilada pelo Vite. React Router controla as rotas públicas e protegidas. TanStack Query mantém `/auth/me` como fonte de verdade da sessão; login e logout atualizam o mesmo cache. A camada `services/` centraliza chamadas HTTP com `credentials: 'include'`. Tailwind CSS sustenta a camada visual. O frontend não lê o JWT, não acessa o banco e não persiste o token localmente.
 
 ### Backend
 
@@ -71,3 +71,5 @@ As camadas devem ser criadas incrementalmente quando houver necessidade real, co
 ## Autenticação
 
 O login usa `username` e senha verificada com bcrypt (cost factor 12). A API emite JWT com apenas o identificador no `sub`, expiração inicial de 8 horas e armazenamento exclusivo em cookie HttpOnly. O middleware valida token, existência e estado ativo do usuário em cada acesso protegido. Não há refresh token ou blacklist nesta fase. Consulte o [ADR 0003](adr/0003-auth-strategy.md).
+
+No navegador, o acesso a `/dashboard` aguarda a restauração da sessão antes de decidir qualquer redirecionamento. Uma resposta 401 em `/auth/me` representa ausência de sessão e leva a `/login`; uma sessão válida impede permanência no login. O logout limpa a query `['auth', 'session']` mesmo quando a sessão remota já expirou.

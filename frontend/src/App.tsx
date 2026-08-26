@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
 
-import { HomePage } from './pages/HomePage';
+import { GuestRoute, ProtectedRoute } from './components/AuthRoutes';
+import { DashboardPage } from './pages/DashboardPage';
+import { LoginPage } from './pages/LoginPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,11 +15,33 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </QueryClientProvider>
+  );
+}
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 }
