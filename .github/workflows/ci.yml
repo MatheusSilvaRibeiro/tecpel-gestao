@@ -30,6 +30,9 @@ jobs:
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
+      - name: Gerar Prisma Client
+        run: pnpm --filter @tecpel/backend prisma:generate
+
       - name: Verificar lint
         run: pnpm lint
 
