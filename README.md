@@ -42,4 +42,14 @@ pnpm dev
 
 O cliente web deve enviar requests com credenciais. O token não é retornado no body e não deve ser salvo em `localStorage`.
 
+## Testes de integração
+
+A suíte de integração usa Testcontainers para iniciar um PostgreSQL 17 isolado e descartável, aplica a migration real e valida Prisma, persistência, autenticação e seed. Docker deve estar em execução.
+
+```bash
+pnpm --filter @tecpel/backend test:integration
+```
+
+O banco de desenvolvimento não é acessado. O container e seus dados são removidos automaticamente ao final da suíte.
+
 Consulte [CONTRIBUTING.md](CONTRIBUTING.md) para os comandos e padrões do projeto. A visão do MVP está em [docs/vision.md](docs/vision.md) e as decisões técnicas em [docs/architecture.md](docs/architecture.md).

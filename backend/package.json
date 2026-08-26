@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prisma:generate": "prisma generate",
@@ -28,6 +29,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^12.1.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
