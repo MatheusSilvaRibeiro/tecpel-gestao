@@ -11,3 +11,5 @@ coverage/
 .idea/
 .vscode/
 backend/prisma/dev.db*
+backend/uploads/products/*
+!backend/uploads/products/.gitkeep

@@ -1,9 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
 
-import { GuestRoute, ProtectedRoute } from './components/AuthRoutes';
+import {
+  AdminRoute,
+  GuestRoute,
+  ProtectedRoute,
+} from './components/AuthRoutes';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
+import { ProductFormPage } from './pages/ProductFormPage';
+import { ProductsPage } from './pages/ProductsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +46,38 @@ export function AppRoutes() {
           <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute>
+            <ProductsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/new"
+        element={
+          <AdminRoute>
+            <ProductFormPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/products/:id"
+        element={
+          <ProtectedRoute>
+            <ProductDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products/:id/edit"
+        element={
+          <AdminRoute>
+            <ProductFormPage />
+          </AdminRoute>
         }
       />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -5,3 +5,4 @@ node_modules
 .github
 coverage
 *.log
+backend/uploads/products/*

@@ -5,11 +5,14 @@ import express, {
   type RequestHandler,
 } from 'express';
 import helmet from 'helmet';
+import multer from 'multer';
+import path from 'node:path';
 
 import { env } from './config/env.js';
 import { AppError } from './errors/app-error.js';
 import { prisma } from './infrastructure/prisma/client.js';
 import { PrismaUserStore } from './modules/auth/prisma-user-store.js';
+import { createAuthenticate } from './modules/auth/authenticate.js';
 import { createAuthRouter } from './modules/auth/routes.js';
 import {
   createTokenService,
@@ -17,11 +20,16 @@ import {
   type TokenService,
 } from './modules/auth/token.js';
 import type { UserStore } from './modules/auth/user-store.js';
+import { PrismaProductStore } from './modules/products/prisma-product-store.js';
+import type { ProductStore } from './modules/products/product-store.js';
+import { createProductsRouter } from './modules/products/routes.js';
 
 interface AppDependencies {
   userStore: UserStore;
   tokenService: TokenService;
   authCookie: { name: string; maxAgeMs: number; secure?: boolean };
+  productStore?: ProductStore;
+  uploadDirectory?: string;
 }
 
 const notFound: RequestHandler = (_request, response) => {
@@ -43,6 +51,16 @@ const errorHandler: ErrorRequestHandler = (
     return;
   }
 
+  if (error instanceof multer.MulterError) {
+    response.status(400).json({
+      error: {
+        code: 'INVALID_IMAGE',
+        message: 'A imagem deve ter no máximo 5 MB.',
+      },
+    });
+    return;
+  }
+
   if (env.NODE_ENV !== 'production') console.error(error);
   response.status(500).json({
     error: { code: 'INTERNAL_ERROR', message: 'Erro interno do servidor.' },
@@ -58,6 +76,16 @@ export function createApp(dependencies: AppDependencies) {
   app.use(express.json());
   app.use(cookieParser());
 
+  if (dependencies.uploadDirectory) {
+    app.use(
+      '/uploads/products',
+      express.static(dependencies.uploadDirectory, {
+        fallthrough: false,
+        index: false,
+      }),
+    );
+  }
+
   app.get('/health', (_request, response) => {
     response.status(200).json({ status: 'ok', service: 'tecpel-backend' });
   });
@@ -69,6 +97,21 @@ export function createApp(dependencies: AppDependencies) {
       dependencies.authCookie,
     ),
   );
+  if (dependencies.productStore && dependencies.uploadDirectory) {
+    const authenticate = createAuthenticate(
+      dependencies.userStore,
+      dependencies.tokenService,
+      dependencies.authCookie.name,
+    );
+    app.use(
+      '/products',
+      createProductsRouter(
+        dependencies.productStore,
+        authenticate,
+        dependencies.uploadDirectory,
+      ),
+    );
+  }
 
   app.use(notFound);
   app.use(errorHandler);
@@ -87,4 +130,6 @@ export const app = createApp({
     maxAgeMs: durationToMilliseconds(env.JWT_EXPIRES_IN),
     secure: env.NODE_ENV === 'production',
   },
+  productStore: new PrismaProductStore(prisma),
+  uploadDirectory: path.resolve('uploads/products'),
 });
