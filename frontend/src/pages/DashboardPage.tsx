@@ -1,5 +1,5 @@
-import { LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LogOut, Package } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -50,6 +50,13 @@ export function DashboardPage() {
             Os indicadores da operação serão adicionados em uma próxima
             milestone.
           </div>
+          <Link
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-amber-300 px-4 py-2.5 font-semibold text-stone-950"
+            to="/products"
+          >
+            <Package size={18} />
+            Gerenciar produtos
+          </Link>
         </section>
       </div>
     </main>

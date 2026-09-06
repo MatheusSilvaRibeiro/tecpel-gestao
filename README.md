@@ -2,6 +2,10 @@
 
 Sistema web responsivo para gestão de perfumes e cremes da TecPel. O MVP abrangerá produtos, estoque, vendas, lucro real, dashboard e histórico.
 
+## Produtos e estoque
+
+Usuários autenticados acessam `/products`. ADMIN pode cadastrar, editar, desativar e movimentar estoque; VENDEDOR possui acesso somente de consulta. Entradas e ajustes formam o saldo rastreável, sem armazenar uma quantidade duplicada no produto.
+
 ## Início rápido com Docker
 
 ```bash

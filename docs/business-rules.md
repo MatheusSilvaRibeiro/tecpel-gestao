@@ -5,12 +5,24 @@ Este documento registra apenas conceitos já conhecidos. Detalhes de cálculo, v
 ## Produtos
 
 - O sistema gerenciará produtos dos domínios conhecidos: perfumes e cremes.
-- Cada produto terá controle de custo e de preço de venda.
+- O preço de venda deve ser positivo e é persistido como decimal.
+- Produtos são desativados por soft delete e preservam todo o histórico.
+- Produtos inativos continuam consultáveis, mas não recebem movimentações.
+- A foto é opcional e seu arquivo fica fora do banco de dados.
 
 ## Estoque
 
-- O sistema controlará o estoque dos produtos.
-- A forma das movimentações, permissões e validações será definida na milestone de Estoque.
+- O estoque atual é calculado pela soma das movimentações; não há saldo armazenado no produto.
+- `ENTRY` registra quantidade positiva e custo unitário positivo obrigatório.
+- `ADJUSTMENT` registra um delta positivo ou negativo, diferente de zero, com motivo obrigatório.
+- Nenhuma movimentação pode resultar em estoque negativo.
+- O custo unitário pertence à entrada; cálculo de custo médio e lucro permanece fora desta milestone.
+
+## Permissões de produtos e estoque
+
+- `ADMIN` cria, edita e desativa produtos, além de registrar entradas e ajustes.
+- `ADMIN` e `VENDEDOR` consultam produtos e estoque.
+- `VENDEDOR` não executa operações de escrita nesses módulos.
 
 ## Vendas
 

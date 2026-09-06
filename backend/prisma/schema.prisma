@@ -12,6 +12,16 @@ enum UserRole {
   VENDEDOR
 }
 
+enum ProductType {
+  PERFUME
+  CREAM
+}
+
+enum StockMovementType {
+  ENTRY
+  ADJUSTMENT
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -22,4 +32,41 @@ model User {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  stockMovements StockMovement[]
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  brand          String?
+  description    String?
+  type           ProductType
+  salePrice      Decimal         @db.Decimal(10, 2)
+  imageUrl       String?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  stockMovements StockMovement[]
+
+  @@index([name])
+  @@index([type])
+  @@index([active])
+}
+
+model StockMovement {
+  id        String            @id @default(uuid())
+  productId String
+  type      StockMovementType
+  quantity  Int
+  unitCost  Decimal?          @db.Decimal(10, 2)
+  note      String?
+  createdBy String
+  createdAt DateTime          @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [createdBy], references: [id])
+
+  @@index([productId, createdAt])
+  @@index([createdBy])
 }

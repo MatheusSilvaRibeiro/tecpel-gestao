@@ -36,11 +36,13 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@tecpel.local}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+    command: sh -c "pnpm --filter @tecpel/backend prisma:deploy && pnpm --filter @tecpel/backend prisma:seed && pnpm --filter @tecpel/backend dev"
     ports:
       - '${BACKEND_PORT:-3333}:3333'
     volumes:
       - ./backend/src:/app/backend/src
       - ./backend/prisma:/app/backend/prisma
+      - ./backend/uploads:/app/backend/uploads
     depends_on:
       postgres:
         condition: service_healthy

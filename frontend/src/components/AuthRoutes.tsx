@@ -19,3 +19,11 @@ export function GuestRoute({ children }: { children: ReactNode }) {
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
+
+export function AdminRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <SessionLoading />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'ADMIN') return <Navigate to="/products" replace />;
+  return children;
+}

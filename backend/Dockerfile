@@ -8,6 +8,7 @@ COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
 RUN pnpm install --frozen-lockfile
 COPY backend backend
+RUN pnpm --filter @tecpel/backend prisma:generate
 
 FROM base AS development
 ENV NODE_ENV=development
@@ -15,7 +16,6 @@ EXPOSE 3333
 CMD ["pnpm", "--filter", "@tecpel/backend", "dev"]
 
 FROM base AS build
-RUN pnpm --filter @tecpel/backend prisma:generate
 RUN pnpm --filter @tecpel/backend build
 
 FROM node:22-alpine AS production

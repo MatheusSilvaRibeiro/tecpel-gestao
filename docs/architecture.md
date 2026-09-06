@@ -22,15 +22,19 @@ O diretório `frontend/` contém a SPA em React, compilada pelo Vite. React Rout
 
 ### Backend
 
-O diretório `backend/` contém a API Express. `src/app.ts` compõe middlewares, rotas, dependências e tratamento centralizado de erros; `src/server.ts` inicia o servidor; `src/config/` valida configurações de ambiente com Zod. O módulo `src/modules/auth/` separa rotas, autenticação, caso de uso de login, criptografia, JWT e contrato de persistência. A implementação Prisma fica em `src/infrastructure/`.
+O diretório `backend/` contém a API Express. `src/app.ts` compõe middlewares, rotas, dependências e tratamento centralizado de erros; `src/server.ts` inicia o servidor; `src/config/` valida configurações de ambiente com Zod. Os módulos `src/modules/auth/`, `products/` e `stock/` separam HTTP, casos de uso e contratos de persistência. Implementações Prisma não ficam nos controllers.
 
 ### Banco de dados
 
-PostgreSQL é o banco relacional e Prisma é o ponto de acesso da aplicação. O schema contém `User` e as roles `ADMIN` e `VENDEDOR`; alterações são versionadas por migrations. O seed idempotente mantém o administrador inicial com senha armazenada como hash bcrypt.
+PostgreSQL é o banco relacional e Prisma é o ponto de acesso da aplicação. O schema contém usuários, produtos e movimentações rastreáveis de estoque; alterações são versionadas por migrations. Preços e custos usam `Decimal(10,2)` e são expostos na API como strings decimais, evitando representação monetária por ponto flutuante.
 
 ### Docker
 
 O Docker Compose organiza três serviços: `frontend`, `backend` e `postgres`. Health checks controlam a prontidão e volumes preservam os dados locais do PostgreSQL e permitem atualização do código durante o desenvolvimento.
+
+### Imagens de produtos
+
+Uploads JPEG, PNG e WebP de até 5 MB são validados por MIME e assinatura do arquivo. O backend gera nomes UUID, salva em `backend/uploads/products/`, serve `/uploads/products` estaticamente e persiste somente `imageUrl`. Substituir uma imagem atualiza a referência; a remoção automática do arquivo anterior foi adiada para evitar acoplar compensações de arquivo e banco nesta milestone.
 
 ## Fluxo HTTP
 

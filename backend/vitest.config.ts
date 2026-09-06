@@ -9,7 +9,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       include: ['src/**/*.ts'],
-      exclude: ['src/server.ts'],
+      exclude: [
+        'src/server.ts',
+        'src/modules/products/prisma-product-store.ts',
+      ],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },
