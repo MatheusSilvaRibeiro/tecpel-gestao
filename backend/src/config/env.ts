@@ -13,6 +13,7 @@ const envSchema = z.object({
     .default('8h'),
   AUTH_COOKIE_NAME: z.string().min(1).default('tecpel_auth'),
   CORS_ORIGIN: z.url().default('http://localhost:5173'),
+  STORE_TIMEZONE: z.string().min(1).default('America/Sao_Paulo'),
 });
 
 export function parseEnv(input: NodeJS.ProcessEnv) {

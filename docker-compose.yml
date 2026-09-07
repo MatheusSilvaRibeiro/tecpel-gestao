@@ -32,6 +32,7 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-tecpel_auth}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      STORE_TIMEZONE: ${STORE_TIMEZONE:-America/Sao_Paulo}
       ADMIN_NAME: ${ADMIN_NAME:-Administrador}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@tecpel.local}

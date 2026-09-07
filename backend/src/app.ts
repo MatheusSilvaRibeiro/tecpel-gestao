@@ -20,6 +20,9 @@ import {
   type TokenService,
 } from './modules/auth/token.js';
 import type { UserStore } from './modules/auth/user-store.js';
+import { PrismaDashboardStore } from './modules/dashboard/prisma-dashboard-store.js';
+import { createDashboardRouter } from './modules/dashboard/routes.js';
+import type { DashboardStore } from './modules/dashboard/dashboard-store.js';
 import { PrismaProductStore } from './modules/products/prisma-product-store.js';
 import type { ProductStore } from './modules/products/product-store.js';
 import { createProductsRouter } from './modules/products/routes.js';
@@ -34,6 +37,9 @@ interface AppDependencies {
   productStore?: ProductStore;
   uploadDirectory?: string;
   saleStore?: SaleStore;
+  dashboardStore?: DashboardStore;
+  storeTimezone?: string;
+  now?: () => Date;
 }
 
 const notFound: RequestHandler = (_request, response) => {
@@ -118,6 +124,16 @@ export function createApp(dependencies: AppDependencies) {
   }
   if (dependencies.saleStore)
     app.use('/sales', createSalesRouter(dependencies.saleStore, authenticate));
+  if (dependencies.dashboardStore)
+    app.use(
+      '/dashboard',
+      createDashboardRouter(
+        dependencies.dashboardStore,
+        authenticate,
+        dependencies.storeTimezone ?? 'America/Sao_Paulo',
+        dependencies.now,
+      ),
+    );
 
   app.use(notFound);
   app.use(errorHandler);
@@ -138,5 +154,7 @@ export const app = createApp({
   },
   productStore: new PrismaProductStore(prisma),
   saleStore: new PrismaSaleStore(prisma),
+  dashboardStore: new PrismaDashboardStore(prisma),
+  storeTimezone: env.STORE_TIMEZONE,
   uploadDirectory: path.resolve('uploads/products'),
 });
