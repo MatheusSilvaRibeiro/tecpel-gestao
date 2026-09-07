@@ -8,6 +8,7 @@ describe('configuração do ambiente', () => {
     expect(env.PORT).toBe(3333);
     expect(env.JWT_EXPIRES_IN).toBe('8h');
     expect(env.AUTH_COOKIE_NAME).toBe('tecpel_auth');
+    expect(env.STORE_TIMEZONE).toBe('America/Sao_Paulo');
   });
 
   it('rejeita JWT_SECRET ausente', () => {
