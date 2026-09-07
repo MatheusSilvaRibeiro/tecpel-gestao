@@ -20,6 +20,15 @@ enum ProductType {
 enum StockMovementType {
   ENTRY
   ADJUSTMENT
+  SALE
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  DEBIT_CARD
+  CREDIT_CARD
+  OTHER
 }
 
 model User {
@@ -34,6 +43,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   stockMovements StockMovement[]
+  sales          Sale[]
 }
 
 model Product {
@@ -48,6 +58,7 @@ model Product {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   stockMovements StockMovement[]
+  saleItems      SaleItem[]
 
   @@index([name])
   @@index([type])
@@ -69,4 +80,38 @@ model StockMovement {
 
   @@index([productId, createdAt])
   @@index([createdBy])
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  soldById      String
+  paymentMethod PaymentMethod
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  totalCost     Decimal       @db.Decimal(10, 2)
+  totalProfit   Decimal       @db.Decimal(10, 2)
+  createdAt     DateTime      @default(now())
+
+  soldBy User       @relation(fields: [soldById], references: [id])
+  items  SaleItem[]
+
+  @@index([createdAt])
+  @@index([soldById])
+  @@index([paymentMethod])
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  productId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  unitCost  Decimal @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+  profit    Decimal @db.Decimal(10, 2)
+
+  sale    Sale    @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
 }

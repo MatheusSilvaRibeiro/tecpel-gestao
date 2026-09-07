@@ -11,6 +11,9 @@ import { LoginPage } from './pages/LoginPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { ProductFormPage } from './pages/ProductFormPage';
 import { ProductsPage } from './pages/ProductsPage';
+import { NewSalePage } from './pages/NewSalePage';
+import { SaleDetailPage } from './pages/SaleDetailPage';
+import { SalesPage } from './pages/SalesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +48,30 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales"
+        element={
+          <ProtectedRoute>
+            <SalesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/new"
+        element={
+          <ProtectedRoute>
+            <NewSalePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/:id"
+        element={
+          <ProtectedRoute>
+            <SaleDetailPage />
           </ProtectedRoute>
         }
       />

@@ -1,5 +1,5 @@
 export type ProductType = 'PERFUME' | 'CREAM';
-export type StockMovementType = 'ENTRY' | 'ADJUSTMENT';
+export type StockMovementType = 'ENTRY' | 'ADJUSTMENT' | 'SALE';
 
 export interface Product {
   id: string;

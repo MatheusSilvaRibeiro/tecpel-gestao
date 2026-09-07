@@ -23,6 +23,9 @@ import type { UserStore } from './modules/auth/user-store.js';
 import { PrismaProductStore } from './modules/products/prisma-product-store.js';
 import type { ProductStore } from './modules/products/product-store.js';
 import { createProductsRouter } from './modules/products/routes.js';
+import { PrismaSaleStore } from './modules/sales/prisma-sale-store.js';
+import { createSalesRouter } from './modules/sales/routes.js';
+import type { SaleStore } from './modules/sales/sale-store.js';
 
 interface AppDependencies {
   userStore: UserStore;
@@ -30,6 +33,7 @@ interface AppDependencies {
   authCookie: { name: string; maxAgeMs: number; secure?: boolean };
   productStore?: ProductStore;
   uploadDirectory?: string;
+  saleStore?: SaleStore;
 }
 
 const notFound: RequestHandler = (_request, response) => {
@@ -97,12 +101,12 @@ export function createApp(dependencies: AppDependencies) {
       dependencies.authCookie,
     ),
   );
+  const authenticate = createAuthenticate(
+    dependencies.userStore,
+    dependencies.tokenService,
+    dependencies.authCookie.name,
+  );
   if (dependencies.productStore && dependencies.uploadDirectory) {
-    const authenticate = createAuthenticate(
-      dependencies.userStore,
-      dependencies.tokenService,
-      dependencies.authCookie.name,
-    );
     app.use(
       '/products',
       createProductsRouter(
@@ -112,6 +116,8 @@ export function createApp(dependencies: AppDependencies) {
       ),
     );
   }
+  if (dependencies.saleStore)
+    app.use('/sales', createSalesRouter(dependencies.saleStore, authenticate));
 
   app.use(notFound);
   app.use(errorHandler);
@@ -131,5 +137,6 @@ export const app = createApp({
     secure: env.NODE_ENV === 'production',
   },
   productStore: new PrismaProductStore(prisma),
+  saleStore: new PrismaSaleStore(prisma),
   uploadDirectory: path.resolve('uploads/products'),
 });
