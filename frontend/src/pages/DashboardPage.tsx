@@ -1,4 +1,4 @@
-import { LogOut, Package } from 'lucide-react';
+import { LogOut, Package, ShoppingCart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
@@ -56,6 +56,12 @@ export function DashboardPage() {
           >
             <Package size={18} />
             Gerenciar produtos
+          </Link>
+          <Link
+            className="ml-3 mt-6 inline-flex items-center gap-2 rounded-xl border border-amber-300 px-4 py-2.5 font-semibold text-amber-300"
+            to="/sales"
+          >
+            <ShoppingCart size={18} /> Vendas
           </Link>
         </section>
       </div>

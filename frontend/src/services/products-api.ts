@@ -20,7 +20,7 @@ export interface Product {
 }
 export interface StockMovement {
   id: string;
-  type: 'ENTRY' | 'ADJUSTMENT';
+  type: 'ENTRY' | 'ADJUSTMENT' | 'SALE';
   quantity: number;
   unitCost: string | null;
   note: string | null;

@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, Package } from 'lucide-react';
+import { ArrowLeft, LogOut, Package, ShoppingCart } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -24,6 +24,9 @@ export function ProductShell({ children }: PropsWithChildren) {
               className="flex items-center gap-2 font-semibold"
             >
               <Package className="text-amber-300" /> Produtos
+            </Link>
+            <Link to="/sales" className="flex items-center gap-2 font-semibold">
+              <ShoppingCart className="text-amber-300" /> Vendas
             </Link>
           </nav>
           <button

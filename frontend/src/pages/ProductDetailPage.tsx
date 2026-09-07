@@ -235,7 +235,11 @@ export function ProductDetailPage() {
             >
               <div>
                 <strong>
-                  {movement.type === 'ENTRY' ? 'Entrada' : 'Ajuste'}
+                  {movement.type === 'ENTRY'
+                    ? 'Entrada'
+                    : movement.type === 'SALE'
+                      ? 'Venda'
+                      : 'Ajuste'}
                 </strong>
                 <p className="text-sm text-stone-400">
                   {movement.note ||
