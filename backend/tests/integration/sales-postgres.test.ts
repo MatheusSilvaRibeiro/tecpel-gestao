@@ -58,6 +58,9 @@ beforeAll(async () => {
   await migrate(
     '../../prisma/migrations/20260906020000_add_sales/migration.sql',
   );
+  await migrate(
+    '../../prisma/migrations/20260910010000_add_purchases/migration.sql',
+  );
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
   uploadDirectory = await mkdtemp(path.join(tmpdir(), 'tecpel-sales-'));

@@ -20,6 +20,7 @@ export interface DashboardData {
   stock: { activeProducts: number; outOfStock: number; lowStock: number };
   recentSales: DashboardRecentSale[];
   revenueLast7Days: { date: string; revenue: string }[];
+  purchasesMonth: string;
 }
 export interface DashboardStore {
   read(now: Date, timezone: string): Promise<DashboardData>;

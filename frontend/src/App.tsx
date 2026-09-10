@@ -14,6 +14,9 @@ import { ProductsPage } from './pages/ProductsPage';
 import { NewSalePage } from './pages/NewSalePage';
 import { SaleDetailPage } from './pages/SaleDetailPage';
 import { SalesPage } from './pages/SalesPage';
+import { PurchasesPage } from './pages/PurchasesPage';
+import { NewPurchasePage } from './pages/NewPurchasePage';
+import { PurchaseDetailPage } from './pages/PurchaseDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +84,30 @@ export function AppRoutes() {
           <ProtectedRoute>
             <ProductsPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchases"
+        element={
+          <AdminRoute>
+            <PurchasesPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/purchases/new"
+        element={
+          <AdminRoute>
+            <NewPurchasePage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/purchases/:id"
+        element={
+          <AdminRoute>
+            <PurchaseDetailPage />
+          </AdminRoute>
         }
       />
       <Route

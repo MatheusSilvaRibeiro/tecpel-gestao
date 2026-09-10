@@ -44,6 +44,7 @@ model User {
 
   stockMovements StockMovement[]
   sales          Sale[]
+  purchases      Purchase[]
 }
 
 model Product {
@@ -59,6 +60,7 @@ model Product {
   updatedAt      DateTime        @updatedAt
   stockMovements StockMovement[]
   saleItems      SaleItem[]
+  purchaseItems  PurchaseItem[]
 
   @@index([name])
   @@index([type])
@@ -66,20 +68,54 @@ model Product {
 }
 
 model StockMovement {
-  id        String            @id @default(uuid())
-  productId String
-  type      StockMovementType
-  quantity  Int
-  unitCost  Decimal?          @db.Decimal(10, 2)
-  note      String?
-  createdBy String
-  createdAt DateTime          @default(now())
+  id             String            @id @default(uuid())
+  productId      String
+  type           StockMovementType
+  quantity       Int
+  unitCost       Decimal?          @db.Decimal(10, 2)
+  note           String?
+  createdBy      String
+  createdAt      DateTime          @default(now())
+  purchaseItemId String?           @unique
 
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [createdBy], references: [id])
+  product      Product       @relation(fields: [productId], references: [id])
+  user         User          @relation(fields: [createdBy], references: [id])
+  purchaseItem PurchaseItem? @relation(fields: [purchaseItemId], references: [id])
 
   @@index([productId, createdAt])
   @@index([createdBy])
+}
+
+model Purchase {
+  id            String   @id @default(uuid())
+  supplierName  String?
+  invoiceNumber String?
+  purchaseDate  DateTime
+  totalAmount   Decimal  @db.Decimal(10, 2)
+  createdById   String
+  createdAt     DateTime @default(now())
+
+  createdBy User           @relation(fields: [createdById], references: [id])
+  items     PurchaseItem[]
+
+  @@index([purchaseDate])
+  @@index([createdById])
+}
+
+model PurchaseItem {
+  id         String  @id @default(uuid())
+  purchaseId String
+  productId  String
+  quantity   Int
+  unitCost   Decimal @db.Decimal(10, 2)
+  subtotal   Decimal @db.Decimal(10, 2)
+
+  purchase      Purchase       @relation(fields: [purchaseId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
+  stockMovement StockMovement?
+
+  @@index([purchaseId])
+  @@index([productId])
 }
 
 model Sale {

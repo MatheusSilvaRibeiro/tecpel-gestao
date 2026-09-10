@@ -8,6 +8,7 @@ import {
   ReceiptText,
   ShoppingCart,
   TrendingUp,
+  Truck,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -89,6 +90,15 @@ export function DashboardPage() {
               <ShoppingCart className="mr-2 inline" size={17} />
               Vendas
             </Link>
+            {user?.role === 'ADMIN' && (
+              <Link
+                className="rounded-xl px-3 py-2 text-sm hover:bg-white/5"
+                to="/purchases"
+              >
+                <Truck className="mr-2 inline" size={17} />
+                Compras
+              </Link>
+            )}
             <button
               className="rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-60"
               disabled={isLoggingOut}
@@ -168,6 +178,14 @@ export function DashboardPage() {
                 value={brl(dashboard.data.today.averageTicket)}
                 icon={ChartNoAxesCombined}
               />
+              {user?.role === 'ADMIN' &&
+                dashboard.data.purchasesMonth !== undefined && (
+                  <MetricCard
+                    label="Compras do mês"
+                    value={brl(dashboard.data.purchasesMonth)}
+                    icon={Truck}
+                  />
+                )}
             </section>
             {dashboard.data.today.salesCount === 0 && (
               <p className="rounded-2xl border border-dashed border-white/15 p-5 text-stone-400">

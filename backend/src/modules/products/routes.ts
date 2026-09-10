@@ -7,6 +7,8 @@ import { AppError } from '../../errors/app-error.js';
 import { authorize } from '../auth/authorize.js';
 import { createStockRouter } from '../stock/routes.js';
 import type { ProductStore } from './product-store.js';
+import type { PurchaseStore } from '../purchases/purchase-store.js';
+import { GetProductCost } from '../purchases/use-cases.js';
 import {
   createProductUpload,
   productImageUrl,
@@ -64,6 +66,7 @@ export function createProductsRouter(
   store: ProductStore,
   authenticate: RequestHandler,
   uploadDirectory: string,
+  purchaseStore?: PurchaseStore,
 ) {
   const router = Router();
   const upload = createProductUpload(uploadDirectory);
@@ -108,6 +111,20 @@ export function createProductsRouter(
       } catch (error) {
         if (request.file)
           await unlink(request.file.path).catch(() => undefined);
+        next(error);
+      }
+    },
+  );
+  router.get(
+    '/:id/cost',
+    authorize('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const cost = purchaseStore
+          ? await new GetProductCost(purchaseStore).execute(productId(request))
+          : null;
+        response.json({ data: { cost }, message: null, meta: null });
+      } catch (error) {
         next(error);
       }
     },
