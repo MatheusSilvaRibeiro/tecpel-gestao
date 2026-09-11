@@ -26,6 +26,9 @@ import type { DashboardStore } from './modules/dashboard/dashboard-store.js';
 import { PrismaProductStore } from './modules/products/prisma-product-store.js';
 import type { ProductStore } from './modules/products/product-store.js';
 import { createProductsRouter } from './modules/products/routes.js';
+import { PrismaPurchaseStore } from './modules/purchases/prisma-purchase-store.js';
+import { createPurchasesRouter } from './modules/purchases/routes.js';
+import type { PurchaseStore } from './modules/purchases/purchase-store.js';
 import { PrismaSaleStore } from './modules/sales/prisma-sale-store.js';
 import { createSalesRouter } from './modules/sales/routes.js';
 import type { SaleStore } from './modules/sales/sale-store.js';
@@ -38,6 +41,7 @@ interface AppDependencies {
   uploadDirectory?: string;
   saleStore?: SaleStore;
   dashboardStore?: DashboardStore;
+  purchaseStore?: PurchaseStore;
   storeTimezone?: string;
   now?: () => Date;
 }
@@ -119,6 +123,7 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.productStore,
         authenticate,
         dependencies.uploadDirectory,
+        dependencies.purchaseStore,
       ),
     );
   }
@@ -133,6 +138,11 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.storeTimezone ?? 'America/Sao_Paulo',
         dependencies.now,
       ),
+    );
+  if (dependencies.purchaseStore)
+    app.use(
+      '/purchases',
+      createPurchasesRouter(dependencies.purchaseStore, authenticate),
     );
 
   app.use(notFound);
@@ -155,6 +165,7 @@ export const app = createApp({
   productStore: new PrismaProductStore(prisma),
   saleStore: new PrismaSaleStore(prisma),
   dashboardStore: new PrismaDashboardStore(prisma),
+  purchaseStore: new PrismaPurchaseStore(prisma),
   storeTimezone: env.STORE_TIMEZONE,
   uploadDirectory: path.resolve('uploads/products'),
 });

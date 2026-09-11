@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/useAuth';
 import {
   useProduct,
   useProductMutations,
+  useProductCost,
   useProductStock,
 } from '../hooks/useProducts';
 import { productImageSrc } from '../services/products-api';
@@ -39,6 +40,8 @@ export function ProductDetailPage() {
   const { user } = useAuth();
   const product = useProduct(id);
   const stock = useProductStock(id);
+  const isAdmin = user?.role === 'ADMIN';
+  const cost = useProductCost(id, isAdmin);
   const mutations = useProductMutations(id);
   const navigate = useNavigate();
   const entry = useForm<EntryValues>({
@@ -65,7 +68,6 @@ export function ProductDetailPage() {
       </ProductShell>
     );
   const item = product.data;
-  const isAdmin = user?.role === 'ADMIN';
   return (
     <ProductShell>
       <section className="grid gap-7 md:grid-cols-[280px_1fr]">
@@ -98,6 +100,39 @@ export function ProductDetailPage() {
           <p className="mt-6 text-stone-300">
             {item.description || 'Sem descrição.'}
           </p>
+          {isAdmin && (
+            <div className="mt-6 rounded-xl border border-white/10 p-4">
+              <h2 className="font-semibold">Custo e margem</h2>
+              {cost.isLoading ? (
+                <p className="mt-2 text-stone-400">Carregando custos...</p>
+              ) : cost.data ? (
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <p>
+                    <span className="block text-sm text-stone-500">
+                      Último custo
+                    </span>
+                    {`R$ ${cost.data.lastUnitCost.replace('.', ',')}`}
+                  </p>
+                  <p>
+                    <span className="block text-sm text-stone-500">
+                      Última compra
+                    </span>
+                    {new Date(cost.data.lastPurchaseDate).toLocaleDateString(
+                      'pt-BR',
+                    )}
+                  </p>
+                  <p>
+                    <span className="block text-sm text-stone-500">
+                      Margem bruta atual
+                    </span>
+                    {`R$ ${cost.data.grossMarginValue.replace('.', ',')} (${cost.data.grossMarginPercent.replace('.', ',')}%)`}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-2 text-stone-400">Sem histórico de compras.</p>
+              )}
+            </div>
+          )}
           <div className="mt-7 flex gap-8">
             <div>
               <span className="block text-sm text-stone-500">Preço</span>

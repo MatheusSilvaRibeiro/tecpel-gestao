@@ -53,10 +53,15 @@ beforeAll(async () => {
   await migrate(
     '../../prisma/migrations/20260906020000_add_sales/migration.sql',
   );
+  await migrate(
+    '../../prisma/migrations/20260910010000_add_purchases/migration.sql',
+  );
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
 });
 beforeEach(async () => {
+  await prisma.purchaseItem.deleteMany();
+  await prisma.purchase.deleteMany();
   await prisma.stockMovement.deleteMany();
   await prisma.saleItem.deleteMany();
   await prisma.sale.deleteMany();
@@ -170,6 +175,20 @@ async function seed() {
       units: 1,
     },
   ];
+  await prisma.purchase.createMany({
+    data: [
+      {
+        purchaseDate: new Date('2026-09-02T12:00:00Z'),
+        totalAmount: '125.00',
+        createdById: admin.id,
+      },
+      {
+        purchaseDate: new Date('2026-08-31T12:00:00Z'),
+        totalAmount: '999.00',
+        createdById: admin.id,
+      },
+    ],
+  });
   for (const sale of sales)
     await prisma.sale.create({
       data: {
@@ -217,6 +236,7 @@ describe('dashboard with PostgreSQL', () => {
       salesCount: 2,
       averageTicket: '150.00',
     });
+    expect(data.purchasesMonth).toBe('125.00');
     expect(data.stock).toEqual({
       activeProducts: 3,
       outOfStock: 1,

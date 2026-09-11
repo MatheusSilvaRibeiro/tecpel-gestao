@@ -14,6 +14,7 @@ export default defineConfig({
         'src/modules/products/prisma-product-store.ts',
         'src/modules/sales/prisma-sale-store.ts',
         'src/modules/dashboard/prisma-dashboard-store.ts',
+        'src/modules/purchases/prisma-purchase-store.ts',
       ],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },

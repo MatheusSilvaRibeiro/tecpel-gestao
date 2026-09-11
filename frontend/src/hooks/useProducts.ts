@@ -23,6 +23,13 @@ export function useProductStock(id: string) {
     enabled: Boolean(id),
   });
 }
+export function useProductCost(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...productsQueryKey, id, 'cost'],
+    queryFn: () => api.getProductCost(id),
+    enabled: Boolean(id) && enabled,
+  });
+}
 export function useProductMutations(id?: string) {
   const client = useQueryClient();
   const refresh = async () => {

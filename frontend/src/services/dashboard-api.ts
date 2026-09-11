@@ -2,6 +2,7 @@ import { apiRequest } from './api-client';
 import type { PaymentMethod } from './sales-api';
 
 export interface DashboardData {
+  purchasesMonth?: string;
   today: {
     revenue: string;
     cost?: string;

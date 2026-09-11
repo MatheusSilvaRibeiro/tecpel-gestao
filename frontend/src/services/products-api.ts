@@ -32,6 +32,12 @@ export interface ProductFilters {
   type?: ProductType;
   active?: string;
 }
+export interface ProductCost {
+  lastUnitCost: string;
+  lastPurchaseDate: string;
+  grossMarginValue: string;
+  grossMarginPercent: string;
+}
 
 function toFormData(input: Record<string, string | File | null | undefined>) {
   const form = new FormData();
@@ -80,6 +86,11 @@ export function getProductStock(id: string) {
   return apiRequest<{ currentStock: number; movements: StockMovement[] }>(
     `/products/${id}/stock`,
   );
+}
+export async function getProductCost(id: string) {
+  return (
+    await apiRequest<{ cost: ProductCost | null }>(`/products/${id}/cost`)
+  ).cost;
 }
 export function registerEntry(
   id: string,

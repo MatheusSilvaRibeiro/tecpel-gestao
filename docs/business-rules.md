@@ -1,5 +1,15 @@
 # Regras de negócio conhecidas
 
+## Compras
+
+- Apenas ADMIN cria e consulta compras e custos.
+- A compra exige ao menos um produto ativo e não aceita produtos repetidos.
+- Quantidade é inteira positiva; custo unitário é decimal positivo.
+- Subtotais, total e entradas de estoque são calculados e persistidos atomicamente pelo backend.
+- Cada item gera uma movimentação `ENTRY` rastreável.
+- A margem atual não altera custos e lucros congelados em vendas antigas.
+- Compras são o fluxo principal; entrada manual permanece administrativa.
+
 Este documento registra apenas conceitos já conhecidos. Detalhes de cálculo, validações, estados e exceções ainda dependem de definição com o negócio.
 
 ## Produtos

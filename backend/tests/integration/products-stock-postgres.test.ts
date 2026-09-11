@@ -57,6 +57,9 @@ beforeAll(async () => {
   await applyMigration(
     '../../prisma/migrations/20260906010000_add_products_stock/migration.sql',
   );
+  await applyMigration(
+    '../../prisma/migrations/20260910010000_add_purchases/migration.sql',
+  );
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
   uploadDirectory = await mkdtemp(

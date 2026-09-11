@@ -23,12 +23,13 @@ type RecentRow = {
   totalProfit: Prisma.Decimal;
 };
 type RevenueRow = { date: Date; revenue: Prisma.Decimal };
+type PurchasesRow = { total: Prisma.Decimal };
 const money = (value: Prisma.Decimal) => value.toDecimalPlaces(2).toFixed(2);
 
 export class PrismaDashboardStore implements DashboardStore {
   constructor(private readonly prisma: PrismaClient) {}
   async read(now: Date, timezone: string) {
-    const [todayRows, stockRows, recentRows, revenueRows] =
+    const [todayRows, stockRows, recentRows, revenueRows, purchasesRows] =
       await this.prisma.$transaction([
         this.prisma.$queryRaw<TodayRow[]>(Prisma.sql`
         SELECT COALESCE(SUM("totalAmount"), 0)::decimal AS revenue,
@@ -63,6 +64,11 @@ export class PrismaDashboardStore implements DashboardStore {
         FROM days LEFT JOIN "Sale" sale ON (sale."createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timezone})::date = days.date
         GROUP BY days.date ORDER BY days.date
       `),
+        this.prisma.$queryRaw<PurchasesRow[]>(Prisma.sql`
+        SELECT COALESCE(SUM("totalAmount"), 0)::decimal AS total
+        FROM "Purchase"
+        WHERE date_trunc('month', "purchaseDate") = date_trunc('month', (${now}::timestamptz AT TIME ZONE ${timezone}))
+      `),
       ]);
     const today = todayRows[0]!;
     const count = Number(today.salesCount);
@@ -93,6 +99,7 @@ export class PrismaDashboardStore implements DashboardStore {
         date: day.date.toISOString().slice(0, 10),
         revenue: money(day.revenue),
       })),
+      purchasesMonth: money(purchasesRows[0]!.total),
     };
   }
 }

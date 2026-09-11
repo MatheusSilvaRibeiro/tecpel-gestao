@@ -1,5 +1,11 @@
 # Arquitetura
 
+## Compras e rastreabilidade de estoque
+
+O módulo `purchases` separa rotas, casos de uso, contrato de persistência e implementação Prisma. A criação usa transação serializável, calcula valores com `Decimal` e liga cada item a uma movimentação `ENTRY` por `purchaseItemId`.
+
+O último custo usa `purchaseDate` e `createdAt` como desempate e nunca recalcula custos ou lucros de vendas antigas. Consulte o [ADR 0007](adr/0007-purchases-as-stock-entry-origin.md).
+
 ## Visão geral
 
 O TecPel Gestão é um monorepo TypeScript gerenciado por pnpm. Ele separa a aplicação web, a API HTTP e a persistência relacional. O backend possui autenticação modular; os demais módulos de negócio ainda serão implementados.

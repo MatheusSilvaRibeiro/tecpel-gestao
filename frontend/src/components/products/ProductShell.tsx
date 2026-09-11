@@ -1,11 +1,11 @@
-import { ArrowLeft, LogOut, Package, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, LogOut, Package, ShoppingCart, Truck } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../hooks/useAuth';
 
 export function ProductShell({ children }: PropsWithChildren) {
-  const { logout, isLoggingOut } = useAuth();
+  const { logout, isLoggingOut, user } = useAuth();
   const navigate = useNavigate();
   return (
     <main className="min-h-screen bg-stone-950 px-4 py-5 text-stone-100 sm:px-8">
@@ -28,6 +28,14 @@ export function ProductShell({ children }: PropsWithChildren) {
             <Link to="/sales" className="flex items-center gap-2 font-semibold">
               <ShoppingCart className="text-amber-300" /> Vendas
             </Link>
+            {user?.role === 'ADMIN' && (
+              <Link
+                to="/purchases"
+                className="flex items-center gap-2 font-semibold"
+              >
+                <Truck className="text-amber-300" /> Compras
+              </Link>
+            )}
           </nav>
           <button
             className="rounded-xl border border-white/10 px-4 py-2 text-sm hover:bg-white/5"
