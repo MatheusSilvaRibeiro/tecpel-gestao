@@ -32,6 +32,9 @@ import type { PurchaseStore } from './modules/purchases/purchase-store.js';
 import { PrismaSaleStore } from './modules/sales/prisma-sale-store.js';
 import { createSalesRouter } from './modules/sales/routes.js';
 import type { SaleStore } from './modules/sales/sale-store.js';
+import type { AnalyticsRepository } from './modules/analytics/analytics-repository.js';
+import { PrismaAnalyticsRepository } from './modules/analytics/prisma-analytics-repository.js';
+import { createAnalyticsRouter } from './modules/analytics/routes.js';
 
 interface AppDependencies {
   userStore: UserStore;
@@ -42,6 +45,7 @@ interface AppDependencies {
   saleStore?: SaleStore;
   dashboardStore?: DashboardStore;
   purchaseStore?: PurchaseStore;
+  analyticsRepository?: AnalyticsRepository;
   storeTimezone?: string;
   now?: () => Date;
 }
@@ -124,6 +128,7 @@ export function createApp(dependencies: AppDependencies) {
         authenticate,
         dependencies.uploadDirectory,
         dependencies.purchaseStore,
+        dependencies.analyticsRepository,
       ),
     );
   }
@@ -143,6 +148,16 @@ export function createApp(dependencies: AppDependencies) {
     app.use(
       '/purchases',
       createPurchasesRouter(dependencies.purchaseStore, authenticate),
+    );
+  if (dependencies.analyticsRepository)
+    app.use(
+      '/analytics',
+      createAnalyticsRouter(
+        dependencies.analyticsRepository,
+        authenticate,
+        dependencies.storeTimezone ?? 'America/Sao_Paulo',
+        dependencies.now,
+      ),
     );
 
   app.use(notFound);
@@ -166,6 +181,7 @@ export const app = createApp({
   saleStore: new PrismaSaleStore(prisma),
   dashboardStore: new PrismaDashboardStore(prisma),
   purchaseStore: new PrismaPurchaseStore(prisma),
+  analyticsRepository: new PrismaAnalyticsRepository(prisma),
   storeTimezone: env.STORE_TIMEZONE,
   uploadDirectory: path.resolve('uploads/products'),
 });

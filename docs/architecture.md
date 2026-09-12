@@ -1,5 +1,9 @@
 # Arquitetura
 
+## Analytics e insights
+
+O módulo `analytics` é um modelo de leitura separado dos fluxos transacionais. `AnalyticsRepository` executa agregações no PostgreSQL; `AnalyticsService` aplica visibilidade por papel e produz insights determinísticos. Dashboard e produto consomem esses contratos sem mover regras para vendas ou compras. Consulte o [ADR 0008](adr/0008-analytics-read-model.md).
+
 ## Compras e rastreabilidade de estoque
 
 O módulo `purchases` separa rotas, casos de uso, contrato de persistência e implementação Prisma. A criação usa transação serializável, calcula valores com `Decimal` e liga cada item a uma movimentação `ENTRY` por `purchaseItemId`.

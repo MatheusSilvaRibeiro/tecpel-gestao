@@ -9,6 +9,7 @@ import { createStockRouter } from '../stock/routes.js';
 import type { ProductStore } from './product-store.js';
 import type { PurchaseStore } from '../purchases/purchase-store.js';
 import { GetProductCost } from '../purchases/use-cases.js';
+import type { AnalyticsRepository } from '../analytics/analytics-repository.js';
 import {
   createProductUpload,
   productImageUrl,
@@ -67,6 +68,7 @@ export function createProductsRouter(
   authenticate: RequestHandler,
   uploadDirectory: string,
   purchaseStore?: PurchaseStore,
+  analyticsRepository?: AnalyticsRepository,
 ) {
   const router = Router();
   const upload = createProductUpload(uploadDirectory);
@@ -124,6 +126,32 @@ export function createProductsRouter(
           ? await new GetProductCost(purchaseStore).execute(productId(request))
           : null;
         response.json({ data: { cost }, message: null, meta: null });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
+  router.get(
+    '/:id/analytics',
+    authorize('ADMIN', 'VENDEDOR'),
+    async (request, response, next) => {
+      try {
+        const analytics = analyticsRepository
+          ? await analyticsRepository.getProductAnalytics(productId(request))
+          : {
+              quantitySold: 0,
+              accumulatedProfit: '0.00',
+              lastSaleAt: null,
+              lastPurchaseAt: null,
+            };
+        const data =
+          request.authUser.role === 'ADMIN'
+            ? analytics
+            : {
+                quantitySold: analytics.quantitySold,
+                lastSaleAt: analytics.lastSaleAt,
+              };
+        response.json({ data: { analytics: data }, message: null, meta: null });
       } catch (error) {
         next(error);
       }

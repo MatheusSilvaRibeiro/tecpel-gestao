@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   TrendingUp,
   Truck,
+  BarChart3,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -22,6 +23,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useDashboard } from '../hooks/useDashboard';
+import { useAnalytics, useInsights } from '../hooks/useAnalytics';
 
 const brl = (value: string) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
@@ -58,6 +60,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout, isLoggingOut } = useAuth();
   const dashboard = useDashboard();
+  const analytics = useAnalytics();
+  const insights = useInsights();
   async function handleLogout() {
     await logout();
     navigate('/login', { replace: true });
@@ -99,6 +103,13 @@ export function DashboardPage() {
                 Compras
               </Link>
             )}
+            <Link
+              className="rounded-xl px-3 py-2 text-sm hover:bg-white/5"
+              to="/analytics"
+            >
+              <BarChart3 className="mr-2 inline" size={17} />
+              Analytics
+            </Link>
             <button
               className="rounded-xl border border-white/10 px-3 py-2 text-sm hover:bg-white/5 disabled:opacity-60"
               disabled={isLoggingOut}
@@ -322,6 +333,80 @@ export function DashboardPage() {
                 </div>
               )}
             </section>
+            {analytics.data &&
+              Array.isArray(analytics.data.mostProfitableProducts) && (
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <section className="rounded-2xl border border-white/10 p-5">
+                    <div className="flex justify-between gap-3">
+                      <h2 className="text-lg font-semibold">Top produtos</h2>
+                      <Link className="text-sm text-amber-300" to="/analytics">
+                        Ver análises
+                      </Link>
+                    </div>
+                    {analytics.data.mostProfitableProducts.length === 0 ? (
+                      <p className="mt-4 text-stone-400">
+                        Ainda não há vendas para analisar.
+                      </p>
+                    ) : (
+                      <ol className="mt-4 space-y-3">
+                        {analytics.data.mostProfitableProducts
+                          .slice(0, 5)
+                          .map((item, index) => (
+                            <li
+                              className="flex justify-between gap-3"
+                              key={item.product.id}
+                            >
+                              <span>
+                                {index + 1}. {item.product.name}
+                              </span>
+                              <span className="text-stone-400">
+                                {item.quantitySold} un.
+                              </span>
+                            </li>
+                          ))}
+                      </ol>
+                    )}
+                  </section>
+                  <section className="rounded-2xl border border-white/10 p-5">
+                    <h2 className="text-lg font-semibold">Insights</h2>
+                    {insights.data?.length ? (
+                      <ul className="mt-4 space-y-3">
+                        {insights.data.slice(0, 4).map((message) => (
+                          <li
+                            className="rounded-xl bg-amber-300/10 p-3 text-sm text-amber-100"
+                            key={message}
+                          >
+                            {message}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-4 text-stone-400">
+                        Nenhum alerta relevante.
+                      </p>
+                    )}
+                  </section>
+                  {user?.role === 'ADMIN' && (
+                    <>
+                      <MetricCard
+                        label="Capital investido"
+                        value={brl(analytics.data.investedCapital ?? '0')}
+                        icon={Banknote}
+                      />
+                      <MetricCard
+                        label="Margem média"
+                        value={`${Number(analytics.data.averageMarginPercent ?? 0).toLocaleString('pt-BR')}%`}
+                        icon={TrendingUp}
+                      />
+                      <MetricCard
+                        label="Produtos parados"
+                        value={String(analytics.data.staleProducts.length)}
+                        icon={Package}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
           </div>
         )}
       </div>

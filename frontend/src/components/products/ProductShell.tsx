@@ -1,4 +1,11 @@
-import { ArrowLeft, LogOut, Package, ShoppingCart, Truck } from 'lucide-react';
+import {
+  ArrowLeft,
+  BarChart3,
+  LogOut,
+  Package,
+  ShoppingCart,
+  Truck,
+} from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -36,6 +43,12 @@ export function ProductShell({ children }: PropsWithChildren) {
                 <Truck className="text-amber-300" /> Compras
               </Link>
             )}
+            <Link
+              to="/analytics"
+              className="flex items-center gap-2 font-semibold"
+            >
+              <BarChart3 className="text-amber-300" /> Analytics
+            </Link>
           </nav>
           <button
             className="rounded-xl border border-white/10 px-4 py-2 text-sm hover:bg-white/5"

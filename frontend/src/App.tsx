@@ -17,6 +17,7 @@ import { SalesPage } from './pages/SalesPage';
 import { PurchasesPage } from './pages/PurchasesPage';
 import { NewPurchasePage } from './pages/NewPurchasePage';
 import { PurchaseDetailPage } from './pages/PurchaseDetailPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <AnalyticsPage />
           </ProtectedRoute>
         }
       />
