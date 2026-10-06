@@ -1,5 +1,16 @@
 # Regras de negócio conhecidas
 
+## Analytics
+
+- Rankings de produtos usam lucro acumulado; marcas agrupam por marca.
+- Margem média é `lucro total ÷ faturamento total`, nunca média simples.
+- Capital investido é `estoque atual × último custo`; produto sem compra é ignorado.
+- Produto parado é ativo e não teve venda nos últimos 90 dias.
+- Estoque crítico possui saldo menor ou igual a 5; sem estoque possui saldo zero.
+- Séries cobrem 30 dias e incluem dias sem venda com zero.
+- VENDEDOR não recebe custos, lucros, capital investido nem margens.
+- Insights são determinísticos e não utilizam IA.
+
 ## Compras
 
 - Apenas ADMIN cria e consulta compras e custos.

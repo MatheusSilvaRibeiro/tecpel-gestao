@@ -1,5 +1,7 @@
 # TecPel Gestão
 
+> Analytics transforma vendas, compras e estoque em rankings, margem ponderada, capital investido, alertas e séries de 30 dias. O backend remove custos, lucros, capital e margens das respostas para VENDEDOR.
+
 > Compras são o fluxo administrativo principal de entrada de mercadoria. A API calcula os valores e gera as entradas de estoque na mesma transação; dados de custo são exclusivos do ADMIN.
 
 Sistema web responsivo para gestão de perfumes e cremes da TecPel. O MVP abrangerá produtos, estoque, vendas, lucro real, dashboard e histórico.

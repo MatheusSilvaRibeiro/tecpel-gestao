@@ -17,6 +17,7 @@ import {
   useProductStock,
 } from '../hooks/useProducts';
 import { productImageSrc } from '../services/products-api';
+import { useProductAnalytics } from '../hooks/useAnalytics';
 
 const entrySchema = z.object({
   quantity: z.number().int().positive('Informe uma quantidade positiva.'),
@@ -42,6 +43,7 @@ export function ProductDetailPage() {
   const stock = useProductStock(id);
   const isAdmin = user?.role === 'ADMIN';
   const cost = useProductCost(id, isAdmin);
+  const analytics = useProductAnalytics(id);
   const mutations = useProductMutations(id);
   const navigate = useNavigate();
   const entry = useForm<EntryValues>({
@@ -130,6 +132,50 @@ export function ProductDetailPage() {
                 </div>
               ) : (
                 <p className="mt-2 text-stone-400">Sem histórico de compras.</p>
+              )}
+            </div>
+          )}
+          {analytics.data && (
+            <div className="mt-4 grid gap-3 rounded-xl border border-white/10 p-4 sm:grid-cols-3">
+              <p>
+                <span className="block text-sm text-stone-500">
+                  Quantidade vendida
+                </span>
+                {analytics.data.quantitySold}
+              </p>
+              {isAdmin && (
+                <p>
+                  <span className="block text-sm text-stone-500">
+                    Lucro acumulado
+                  </span>
+                  R${' '}
+                  {(analytics.data.accumulatedProfit ?? '0.00').replace(
+                    '.',
+                    ',',
+                  )}
+                </p>
+              )}
+              <p>
+                <span className="block text-sm text-stone-500">
+                  Última venda
+                </span>
+                {analytics.data.lastSaleAt
+                  ? new Date(analytics.data.lastSaleAt).toLocaleDateString(
+                      'pt-BR',
+                    )
+                  : 'Sem vendas'}
+              </p>
+              {isAdmin && (
+                <p>
+                  <span className="block text-sm text-stone-500">
+                    Última compra
+                  </span>
+                  {analytics.data.lastPurchaseAt
+                    ? new Date(
+                        analytics.data.lastPurchaseAt,
+                      ).toLocaleDateString('pt-BR')
+                    : 'Sem compras'}
+                </p>
               )}
             </div>
           )}

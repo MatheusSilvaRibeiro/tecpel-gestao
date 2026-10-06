@@ -38,6 +38,18 @@ const dashboard = {
     revenue: index === 0 ? '0.00' : '100.00',
   })),
 };
+const analytics = {
+  mostProfitableProducts: [],
+  leastProfitableProducts: [],
+  profitableBrands: [],
+  staleProducts: [],
+  investedCapital: '500.00',
+  averageMarginPercent: '35.00',
+  criticalStock: [],
+  outOfStock: [],
+  revenueEvolution: [],
+  profitEvolution: [],
+};
 const fetchMock = vi.fn<typeof fetch>();
 const response = (data: unknown, status = 200) =>
   Promise.resolve(
@@ -61,9 +73,13 @@ function renderDashboard() {
   );
 }
 function mockApi(user = admin, data: unknown = dashboard) {
-  fetchMock.mockImplementation((input) =>
-    String(input).endsWith('/auth/me') ? success({ user }) : success(data),
-  );
+  fetchMock.mockImplementation((input) => {
+    const url = String(input);
+    if (url.endsWith('/auth/me')) return success({ user });
+    if (url.endsWith('/analytics/insights')) return success({ insights: [] });
+    if (url.endsWith('/analytics')) return success(analytics);
+    return success(data);
+  });
 }
 
 describe('operational dashboard', () => {
@@ -73,13 +89,15 @@ describe('operational dashboard', () => {
   });
   it('shows loading then ADMIN cards formatted in BRL, chart and recent sales', async () => {
     let resolveDashboard: ((value: Response) => void) | undefined;
-    fetchMock.mockImplementation((input) =>
-      String(input).endsWith('/auth/me')
-        ? success({ user: admin })
-        : new Promise<Response>((resolve) => {
-            resolveDashboard = resolve;
-          }),
-    );
+    fetchMock.mockImplementation((input) => {
+      const url = String(input);
+      if (url.endsWith('/auth/me')) return success({ user: admin });
+      if (url.endsWith('/analytics/insights')) return success({ insights: [] });
+      if (url.endsWith('/analytics')) return success(analytics);
+      return new Promise<Response>((resolve) => {
+        resolveDashboard = resolve;
+      });
+    });
     renderDashboard();
     expect(await screen.findByText('Carregando indicadores...')).toBeVisible();
     resolveDashboard?.(await success(dashboard));
