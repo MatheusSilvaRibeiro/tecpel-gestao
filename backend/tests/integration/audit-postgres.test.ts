@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import {
   PostgreSqlContainer,
@@ -11,42 +9,18 @@ import type { AuditWriter } from '../../src/modules/audit/audit-service.js';
 import { PrismaProductStore } from '../../src/modules/products/prisma-product-store.js';
 import { PrismaPurchaseStore } from '../../src/modules/purchases/prisma-purchase-store.js';
 import { PrismaSaleStore } from '../../src/modules/sales/prisma-sale-store.js';
+import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
 let products: PrismaProductStore;
-async function migrate(relativePath: string) {
-  const sql = await readFile(
-    fileURLToPath(new URL(relativePath, import.meta.url)),
-    'utf8',
-  );
-  const result = await container.exec([
-    'psql',
-    '-U',
-    container.getUsername(),
-    '-d',
-    container.getDatabase(),
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    sql,
-  ]);
-  if (result.exitCode !== 0) throw new Error(result.stderr);
-}
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:17-alpine')
     .withDatabase('tecpel_audit_test')
     .withUsername('tecpel_test')
     .withPassword('tecpel_test')
     .start();
-  for (const migration of [
-    '20260826010000_add_user_auth',
-    '20260906010000_add_products_stock',
-    '20260906020000_add_sales',
-    '20260910010000_add_purchases',
-    '20261006010000_add_audit_trail',
-  ])
-    await migrate(`../../prisma/migrations/${migration}/migration.sql`);
+  await applyPrismaMigrations(container);
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
   products = new PrismaProductStore(prisma);

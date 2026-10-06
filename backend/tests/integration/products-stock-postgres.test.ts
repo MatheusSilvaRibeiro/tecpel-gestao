@@ -1,7 +1,6 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { PrismaClient, UserRole } from '@prisma/client';
 import {
@@ -15,6 +14,7 @@ import { createApp } from '../../src/app.js';
 import { PrismaUserStore } from '../../src/modules/auth/prisma-user-store.js';
 import { createTokenService } from '../../src/modules/auth/token.js';
 import { PrismaProductStore } from '../../src/modules/products/prisma-product-store.js';
+import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
@@ -26,40 +26,13 @@ const tokens = createTokenService({
   expiresIn: '8h',
 });
 
-async function applyMigration(relativePath: string) {
-  const sql = await readFile(
-    fileURLToPath(new URL(relativePath, import.meta.url)),
-    'utf8',
-  );
-  const result = await container.exec([
-    'psql',
-    '-U',
-    container.getUsername(),
-    '-d',
-    container.getDatabase(),
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    sql,
-  ]);
-  if (result.exitCode !== 0) throw new Error(result.stderr);
-}
-
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:17-alpine')
     .withDatabase('tecpel_products_test')
     .withUsername('tecpel_test')
     .withPassword('tecpel_test')
     .start();
-  await applyMigration(
-    '../../prisma/migrations/20260826010000_add_user_auth/migration.sql',
-  );
-  await applyMigration(
-    '../../prisma/migrations/20260906010000_add_products_stock/migration.sql',
-  );
-  await applyMigration(
-    '../../prisma/migrations/20260910010000_add_purchases/migration.sql',
-  );
+  await applyPrismaMigrations(container);
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
   uploadDirectory = await mkdtemp(
