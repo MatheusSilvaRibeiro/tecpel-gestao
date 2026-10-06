@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Pencil, Power } from 'lucide-react';
+import { ClipboardClock, Pencil, Power } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
@@ -197,6 +197,13 @@ export function ProductDetailPage() {
           </div>
           {isAdmin && (
             <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                className="rounded-xl border border-white/10 px-4 py-2.5"
+                to={`/audit?entity=PRODUCT&entityId=${id}`}
+              >
+                <ClipboardClock className="mr-2 inline" size={17} /> Ver
+                histórico
+              </Link>
               <Link className={buttonClass} to={`/products/${id}/edit`}>
                 <Pencil className="mr-2 inline" size={17} />
                 Editar

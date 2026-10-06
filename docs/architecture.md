@@ -1,5 +1,11 @@
 # Arquitetura
 
+## Auditoria de negócio
+
+O módulo `audit` registra eventos administrativos relevantes no `AuditLog`. `AuditService` centraliza sanitização defensiva, cálculo de diferenças e persistência; as operações de produto, estoque manual, venda e compra registram o evento dentro da mesma transação PostgreSQL. Dessa forma, a alteração e seu histórico confirmam ou falham juntas.
+
+As consultas usam `AuditRepository`, filtros executados no banco e paginação obrigatória. Apenas ADMIN acessa `/audit`; ações realizadas por VENDEDOR continuam sendo registradas. Auditoria representa histórico de negócio e não substitui logs técnicos, observabilidade ou diagnóstico. Consulte o [ADR 0009](adr/0009-business-audit-trail.md).
+
 ## Analytics e insights
 
 O módulo `analytics` é um modelo de leitura separado dos fluxos transacionais. `AnalyticsRepository` executa agregações no PostgreSQL; `AnalyticsService` aplica visibilidade por papel e produz insights determinísticos. Dashboard e produto consomem esses contratos sem mover regras para vendas ou compras. Consulte o [ADR 0008](adr/0008-analytics-read-model.md).

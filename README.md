@@ -1,5 +1,7 @@
 # TecPel Gestão
 
+> O Histórico de Atividades registra operações relevantes de produto, estoque, venda e compra com usuário, data e alterações. A consulta é exclusiva para ADMIN, paginada e não substitui logs técnicos da aplicação.
+
 > Analytics transforma vendas, compras e estoque em rankings, margem ponderada, capital investido, alertas e séries de 30 dias. O backend remove custos, lucros, capital e margens das respostas para VENDEDOR.
 
 > Compras são o fluxo administrativo principal de entrada de mercadoria. A API calcula os valores e gera as entradas de estoque na mesma transação; dados de custo são exclusivos do ADMIN.

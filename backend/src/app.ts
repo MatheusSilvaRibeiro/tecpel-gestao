@@ -35,6 +35,9 @@ import type { SaleStore } from './modules/sales/sale-store.js';
 import type { AnalyticsRepository } from './modules/analytics/analytics-repository.js';
 import { PrismaAnalyticsRepository } from './modules/analytics/prisma-analytics-repository.js';
 import { createAnalyticsRouter } from './modules/analytics/routes.js';
+import type { AuditRepository } from './modules/audit/audit-repository.js';
+import { PrismaAuditRepository } from './modules/audit/prisma-audit-repository.js';
+import { createAuditRouter } from './modules/audit/routes.js';
 
 interface AppDependencies {
   userStore: UserStore;
@@ -46,6 +49,7 @@ interface AppDependencies {
   dashboardStore?: DashboardStore;
   purchaseStore?: PurchaseStore;
   analyticsRepository?: AnalyticsRepository;
+  auditRepository?: AuditRepository;
   storeTimezone?: string;
   now?: () => Date;
 }
@@ -159,6 +163,11 @@ export function createApp(dependencies: AppDependencies) {
         dependencies.now,
       ),
     );
+  if (dependencies.auditRepository)
+    app.use(
+      '/audit',
+      createAuditRouter(dependencies.auditRepository, authenticate),
+    );
 
   app.use(notFound);
   app.use(errorHandler);
@@ -182,6 +191,7 @@ export const app = createApp({
   dashboardStore: new PrismaDashboardStore(prisma),
   purchaseStore: new PrismaPurchaseStore(prisma),
   analyticsRepository: new PrismaAnalyticsRepository(prisma),
+  auditRepository: new PrismaAuditRepository(prisma),
   storeTimezone: env.STORE_TIMEZONE,
   uploadDirectory: path.resolve('uploads/products'),
 });

@@ -7,8 +7,8 @@ import type {
 
 export class CreateProduct {
   constructor(private readonly store: ProductStore) {}
-  execute(input: ProductInput) {
-    return this.store.create(input);
+  execute(input: ProductInput, actorId?: string) {
+    return this.store.create(input, actorId);
   }
 }
 export class ListProducts {
@@ -28,8 +28,8 @@ export class GetProduct {
 }
 export class UpdateProduct {
   constructor(private readonly store: ProductStore) {}
-  async execute(id: string, input: Partial<ProductInput>) {
-    const product = await this.store.update(id, input);
+  async execute(id: string, input: Partial<ProductInput>, actorId?: string) {
+    const product = await this.store.update(id, input, actorId);
     if (!product)
       throw new AppError(404, 'PRODUCT_NOT_FOUND', 'Produto não encontrado.');
     return product;
@@ -37,8 +37,8 @@ export class UpdateProduct {
 }
 export class DeactivateProduct {
   constructor(private readonly store: ProductStore) {}
-  async execute(id: string) {
-    if (!(await this.store.deactivate(id)))
+  async execute(id: string, actorId?: string) {
+    if (!(await this.store.deactivate(id, actorId)))
       throw new AppError(404, 'PRODUCT_NOT_FOUND', 'Produto não encontrado.');
   }
 }
