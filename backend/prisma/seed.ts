@@ -36,6 +36,11 @@ export async function ensureAdminUser(
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'O seed de desenvolvimento não pode ser executado em produção. Use bootstrap:admin.',
+    );
+  }
   const prisma = new PrismaClient();
 
   try {

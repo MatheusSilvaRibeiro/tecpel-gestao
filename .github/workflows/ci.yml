@@ -50,3 +50,19 @@ jobs:
 
       - name: Compilar frontend
         run: pnpm --filter @tecpel/frontend build
+
+      - name: Validar Docker Compose de produção
+        env:
+          POSTGRES_DB: tecpel_ci
+          POSTGRES_USER: tecpel_ci
+          POSTGRES_PASSWORD: ci-only-password
+          DATABASE_URL: postgresql://tecpel_ci:ci-only-password@postgres:5432/tecpel_ci?schema=public
+          JWT_SECRET: ci-only-secret-with-at-least-32-characters
+          CORS_ORIGIN: https://tecpel.invalid
+        run: docker compose -f docker-compose.prod.yml config --quiet
+
+      - name: Construir imagem de produção do backend
+        run: docker build --target production -f backend/Dockerfile .
+
+      - name: Construir imagem de produção do frontend
+        run: docker build --target production -f frontend/Dockerfile .

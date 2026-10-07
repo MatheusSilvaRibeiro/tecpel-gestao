@@ -41,11 +41,22 @@ import { createAuditRouter } from './modules/audit/routes.js';
 import type { ReportsRepository } from './modules/reports/reports-repository.js';
 import { PrismaReportsRepository } from './modules/reports/prisma-reports-repository.js';
 import { createReportsRouter } from './modules/reports/routes.js';
+import { createLoginRateLimit } from './http/login-rate-limit.js';
+import {
+  consoleLogSink,
+  createRequestLogger,
+  type LogSink,
+} from './http/request-logger.js';
 
 interface AppDependencies {
   userStore: UserStore;
   tokenService: TokenService;
-  authCookie: { name: string; maxAgeMs: number; secure?: boolean };
+  authCookie: {
+    name: string;
+    maxAgeMs: number;
+    secure?: boolean;
+    sameSite?: 'lax' | 'strict';
+  };
   productStore?: ProductStore;
   uploadDirectory?: string;
   saleStore?: SaleStore;
@@ -56,6 +67,13 @@ interface AppDependencies {
   reportsRepository?: ReportsRepository;
   storeTimezone?: string;
   now?: () => Date;
+  readiness?: () => Promise<void>;
+  logger?: LogSink;
+  corsOrigin?: string;
+  jsonBodyLimit?: string;
+  trustProxyHops?: number;
+  appVersion?: string;
+  loginRateLimit?: { windowMs: number; max: number };
 }
 
 const notFound: RequestHandler = (_request, response) => {
@@ -64,7 +82,7 @@ const notFound: RequestHandler = (_request, response) => {
 
 const errorHandler: ErrorRequestHandler = (
   error: unknown,
-  _request,
+  request,
   response,
   _next,
 ) => {
@@ -87,7 +105,14 @@ const errorHandler: ErrorRequestHandler = (
     return;
   }
 
-  if (env.NODE_ENV !== 'production') console.error(error);
+  const logger = request.app.locals.logger as LogSink | undefined;
+  logger?.error({
+    event: 'unhandled_error',
+    requestId: response.getHeader('x-request-id'),
+    method: request.method,
+    path: request.path,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+  });
   response.status(500).json({
     error: { code: 'INTERNAL_ERROR', message: 'Erro interno do servidor.' },
   });
@@ -95,11 +120,22 @@ const errorHandler: ErrorRequestHandler = (
 
 export function createApp(dependencies: AppDependencies) {
   const app = express();
+  const allowedOrigin = dependencies.corsOrigin ?? env.CORS_ORIGIN;
 
   app.disable('x-powered-by');
+  if ((dependencies.trustProxyHops ?? 0) > 0)
+    app.set('trust proxy', dependencies.trustProxyHops);
+  app.locals.logger = dependencies.logger;
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
-  app.use(express.json());
+  app.use(
+    cors({
+      origin: (origin, callback) =>
+        callback(null, origin === undefined || origin === allowedOrigin),
+      credentials: true,
+    }),
+  );
+  if (dependencies.logger) app.use(createRequestLogger(dependencies.logger));
+  app.use(express.json({ limit: dependencies.jsonBodyLimit ?? '100kb' }));
   app.use(cookieParser());
 
   if (dependencies.uploadDirectory) {
@@ -113,7 +149,18 @@ export function createApp(dependencies: AppDependencies) {
   }
 
   app.get('/health', (_request, response) => {
-    response.status(200).json({ status: 'ok', service: 'tecpel-backend' });
+    response.status(200).json({
+      status: 'ok',
+      version: dependencies.appVersion ?? 'development',
+    });
+  });
+  app.get('/ready', async (_request, response) => {
+    try {
+      await dependencies.readiness?.();
+      response.status(200).json({ status: 'ok' });
+    } catch {
+      response.status(503).json({ status: 'unavailable' });
+    }
   });
   app.use(
     '/auth',
@@ -121,6 +168,9 @@ export function createApp(dependencies: AppDependencies) {
       dependencies.userStore,
       dependencies.tokenService,
       dependencies.authCookie,
+      dependencies.loginRateLimit
+        ? createLoginRateLimit(dependencies.loginRateLimit)
+        : undefined,
     ),
   );
   const authenticate = createAuthenticate(
@@ -198,6 +248,7 @@ export const app = createApp({
     name: env.AUTH_COOKIE_NAME,
     maxAgeMs: durationToMilliseconds(env.JWT_EXPIRES_IN),
     secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
   },
   productStore: new PrismaProductStore(prisma),
   saleStore: new PrismaSaleStore(prisma),
@@ -207,5 +258,17 @@ export const app = createApp({
   auditRepository: new PrismaAuditRepository(prisma),
   reportsRepository: new PrismaReportsRepository(prisma),
   storeTimezone: env.STORE_TIMEZONE,
-  uploadDirectory: path.resolve('uploads/products'),
+  uploadDirectory: path.resolve(env.UPLOAD_DIR),
+  readiness: async () => {
+    await prisma.$queryRaw`SELECT 1`;
+  },
+  logger: env.NODE_ENV === 'test' ? undefined : consoleLogSink,
+  corsOrigin: env.CORS_ORIGIN,
+  jsonBodyLimit: env.JSON_BODY_LIMIT,
+  trustProxyHops: env.TRUST_PROXY_HOPS,
+  appVersion: env.APP_VERSION,
+  loginRateLimit: {
+    windowMs: env.LOGIN_RATE_LIMIT_WINDOW_MS,
+    max: env.LOGIN_RATE_LIMIT_MAX,
+  },
 });

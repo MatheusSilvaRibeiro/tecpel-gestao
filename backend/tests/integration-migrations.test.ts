@@ -28,8 +28,8 @@ describe('integration database migrations', () => {
 
     const migrations = await listPrismaMigrations();
     expect(exec).toHaveBeenCalledTimes(migrations.length);
-    expect(exec.mock.calls.map((call) => String(call[0].at(-1))).join('\n')).toContain(
-      'CREATE TABLE "AuditLog"',
-    );
+    expect(
+      exec.mock.calls.map((call) => String(call[0].at(-1))).join('\n'),
+    ).toContain('CREATE TABLE "AuditLog"');
   });
 });

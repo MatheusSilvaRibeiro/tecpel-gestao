@@ -14,13 +14,14 @@ EXPOSE 5173
 CMD ["pnpm", "--filter", "@tecpel/frontend", "dev"]
 
 FROM base AS build
-ARG VITE_API_URL=http://localhost:3333
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter @tecpel/frontend build
 
 FROM nginx:1.29-alpine AS production
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/run
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1

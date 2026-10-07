@@ -8,7 +8,7 @@ describe('API', () => {
     const response = await request(app).get('/health');
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: 'ok', service: 'tecpel-backend' });
+    expect(response.body).toEqual({ status: 'ok', version: 'development' });
   });
 
   it('responde 404 para uma rota desconhecida', async () => {

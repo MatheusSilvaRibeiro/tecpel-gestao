@@ -29,6 +29,10 @@ Depois que os serviços estiverem saudáveis:
 
 Para encerrar, use `docker compose down`. Os dados do PostgreSQL permanecem no volume `postgres_data`.
 
+## Produção local
+
+A stack de produção usa imagens compiladas, Nginx, rede interna e volumes dedicados. O fluxo completo de configuração, migrations, primeiro ADMIN, backup, restore, atualização e rollback está em [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Ela prepara uma implantação, mas não realiza deploy externo.
+
 Antes do primeiro acesso autenticado, aplique a migration e execute o seed idempotente:
 
 ```bash

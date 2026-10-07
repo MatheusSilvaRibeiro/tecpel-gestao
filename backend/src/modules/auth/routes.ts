@@ -1,4 +1,4 @@
-import { Router, type CookieOptions } from 'express';
+import { Router, type CookieOptions, type RequestHandler } from 'express';
 import { z } from 'zod';
 
 import { AppError } from '../../errors/app-error.js';
@@ -11,6 +11,7 @@ export interface AuthCookieConfig {
   name: string;
   maxAgeMs: number;
   secure?: boolean;
+  sameSite?: 'lax' | 'strict';
 }
 
 const loginSchema = z.object({
@@ -22,6 +23,7 @@ export function createAuthRouter(
   userStore: UserStore,
   tokenService: TokenService,
   authCookie: AuthCookieConfig,
+  loginRateLimit?: RequestHandler,
 ) {
   const router = Router();
   const login = createLogin(userStore, tokenService);
@@ -33,29 +35,34 @@ export function createAuthRouter(
   const cookieOptions: CookieOptions = {
     httpOnly: true,
     secure: authCookie.secure ?? false,
-    sameSite: 'lax',
+    sameSite: authCookie.sameSite ?? 'lax',
     path: '/',
     maxAge: authCookie.maxAgeMs,
   };
 
-  router.post('/login', async (request, response, next) => {
-    try {
-      const parsed = loginSchema.safeParse(request.body);
-      if (!parsed.success) {
-        throw new AppError(400, 'VALIDATION_ERROR', 'Payload inválido.');
-      }
+  const noRateLimit: RequestHandler = (_request, _response, next) => next();
+  router.post(
+    '/login',
+    loginRateLimit ?? noRateLimit,
+    async (request, response, next) => {
+      try {
+        const parsed = loginSchema.safeParse(request.body);
+        if (!parsed.success) {
+          throw new AppError(400, 'VALIDATION_ERROR', 'Payload inválido.');
+        }
 
-      const result = await login(parsed.data);
-      response.cookie(authCookie.name, result.token, cookieOptions);
-      response.status(200).json({
-        data: { user: result.user },
-        message: null,
-        meta: null,
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
+        const result = await login(parsed.data);
+        response.cookie(authCookie.name, result.token, cookieOptions);
+        response.status(200).json({
+          data: { user: result.user },
+          message: null,
+          meta: null,
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
 
   router.get('/me', authenticate, (request, response) => {
     response.status(200).json({
