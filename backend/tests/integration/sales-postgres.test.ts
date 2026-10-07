@@ -16,6 +16,7 @@ import { createTokenService } from '../../src/modules/auth/token.js';
 import { PrismaProductStore } from '../../src/modules/products/prisma-product-store.js';
 import { PrismaSaleStore } from '../../src/modules/sales/prisma-sale-store.js';
 import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
@@ -45,11 +46,7 @@ beforeAll(async () => {
   });
 });
 beforeEach(async () => {
-  await prisma.stockMovement.deleteMany();
-  await prisma.saleItem.deleteMany();
-  await prisma.sale.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 afterAll(async () => {
   await prisma?.$disconnect();

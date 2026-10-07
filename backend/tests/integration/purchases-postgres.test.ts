@@ -6,6 +6,7 @@ import {
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaPurchaseStore } from '../../src/modules/purchases/prisma-purchase-store.js';
 import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
@@ -22,13 +23,7 @@ beforeAll(async () => {
   store = new PrismaPurchaseStore(prisma);
 });
 beforeEach(async () => {
-  await prisma.stockMovement.deleteMany();
-  await prisma.purchaseItem.deleteMany();
-  await prisma.purchase.deleteMany();
-  await prisma.saleItem.deleteMany();
-  await prisma.sale.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 afterAll(async () => {
   await prisma?.$disconnect();

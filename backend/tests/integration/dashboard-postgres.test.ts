@@ -10,6 +10,7 @@ import { PrismaUserStore } from '../../src/modules/auth/prisma-user-store.js';
 import { createTokenService } from '../../src/modules/auth/token.js';
 import { PrismaDashboardStore } from '../../src/modules/dashboard/prisma-dashboard-store.js';
 import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
@@ -30,13 +31,7 @@ beforeAll(async () => {
   prisma = new PrismaClient();
 });
 beforeEach(async () => {
-  await prisma.purchaseItem.deleteMany();
-  await prisma.purchase.deleteMany();
-  await prisma.stockMovement.deleteMany();
-  await prisma.saleItem.deleteMany();
-  await prisma.sale.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 afterAll(async () => {
   await prisma?.$disconnect();

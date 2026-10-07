@@ -12,6 +12,7 @@ import { hashPassword } from '../../src/modules/auth/password.js';
 import { PrismaUserStore } from '../../src/modules/auth/prisma-user-store.js';
 import { createTokenService } from '../../src/modules/auth/token.js';
 import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 const cookieName = 'tecpel_auth';
 const tokenService = createTokenService({
@@ -57,7 +58,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 
 afterAll(async () => {
