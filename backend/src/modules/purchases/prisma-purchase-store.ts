@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { AppError } from '../../errors/app-error.js';
+import { AuditService, type AuditWriter } from '../audit/audit-service.js';
 import type {
   CreatePurchaseInput,
   PurchaseFilters,
@@ -44,7 +45,10 @@ function mapPurchase(record: PurchaseRecord, includeItems = true) {
 }
 
 export class PrismaPurchaseStore implements PurchaseStore {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly audit: AuditWriter = new AuditService(),
+  ) {}
   create(input: CreatePurchaseInput) {
     return this.prisma.$transaction(
       async (transaction) => {
@@ -109,6 +113,17 @@ export class PrismaPurchaseStore implements PurchaseStore {
             },
           });
         }
+        await this.audit.record(transaction, {
+          userId: input.createdById,
+          action: 'PURCHASE_CREATED',
+          entity: 'PURCHASE',
+          entityId: purchase.id,
+          metadata: {
+            supplierName: input.supplierName ?? null,
+            totalAmount: money(totalAmount),
+            itemsCount: input.items.length,
+          },
+        });
         return mapPurchase(
           await transaction.purchase.findUniqueOrThrow({
             where: { id: purchase.id },

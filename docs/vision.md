@@ -16,6 +16,7 @@ Sem um registro central, é difícil saber rapidamente quais produtos estão dis
 - Calcular o lucro real com base em custos e receitas registrados.
 - Exibir indicadores essenciais em um dashboard.
 - Manter histórico consultável das operações.
+- Permitir que administradores identifiquem quem realizou cada alteração relevante e o que mudou.
 
 ## Fora da Sprint 0
 

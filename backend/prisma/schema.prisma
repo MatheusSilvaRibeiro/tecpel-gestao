@@ -31,6 +31,23 @@ enum PaymentMethod {
   OTHER
 }
 
+enum AuditAction {
+  CREATE
+  UPDATE
+  DEACTIVATE
+  STOCK_ADJUSTMENT
+  STOCK_ENTRY
+  SALE_CREATED
+  PURCHASE_CREATED
+}
+
+enum AuditEntity {
+  PRODUCT
+  STOCK
+  SALE
+  PURCHASE
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -45,6 +62,25 @@ model User {
   stockMovements StockMovement[]
   sales          Sale[]
   purchases      Purchase[]
+  auditLogs      AuditLog[]
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String
+  action    AuditAction
+  entity    AuditEntity
+  entityId  String
+  before    Json?
+  after     Json?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Product {

@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 
 import { AppError } from '../../errors/app-error.js';
+import { AuditService, type AuditWriter } from '../audit/audit-service.js';
 import type {
   CreateSaleInput,
   Sale,
@@ -79,7 +80,10 @@ function inventoryState(
 }
 
 export class PrismaSaleStore implements SaleStore {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly audit: AuditWriter = new AuditService(),
+  ) {}
 
   create(input: CreateSaleInput) {
     return this.prisma.$transaction(
@@ -171,6 +175,17 @@ export class PrismaSaleStore implements SaleStore {
             note: `Venda ${sale.id}`,
             createdBy: input.soldById,
           })),
+        });
+        await this.audit.record(transaction, {
+          userId: input.soldById,
+          action: 'SALE_CREATED',
+          entity: 'SALE',
+          entityId: sale.id,
+          metadata: {
+            totalAmount: money(totalAmount),
+            paymentMethod: input.paymentMethod,
+            itemsCount: input.items.length,
+          },
         });
         const complete = await transaction.sale.findUniqueOrThrow({
           where: { id: sale.id },

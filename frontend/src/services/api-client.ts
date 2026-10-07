@@ -20,10 +20,10 @@ export class ApiError extends Error {
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
 
-export async function apiRequest<T>(
+export async function apiRequestResponse<T>(
   path: string,
   init?: RequestInit,
-): Promise<T> {
+): Promise<SuccessResponse<T>> {
   const isForm = init?.body instanceof FormData;
   const response = await fetch(`${apiUrl}${path}`, {
     ...init,
@@ -41,5 +41,12 @@ export async function apiRequest<T>(
       body.error?.message ?? 'Não foi possível concluir a solicitação.',
     );
   }
-  return body.data;
+  return body;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
+  return (await apiRequestResponse<T>(path, init)).data;
 }

@@ -1,5 +1,18 @@
 # Regras de negócio conhecidas
 
+## Auditoria
+
+- Criação, alteração e desativação de produto são auditadas.
+- Alterações guardam somente os campos realmente modificados; nenhuma mudança não gera evento `UPDATE`.
+- Entradas manuais e ajustes registram saldo anterior, saldo posterior, quantidade e motivo ou custo aplicável.
+- Compras geram somente `PURCHASE_CREATED`; suas entradas de estoque não geram auditoria redundante.
+- Vendas geram `SALE_CREATED` com total, forma de pagamento e quantidade de itens.
+- Operação e auditoria participam da mesma transação; falha de qualquer uma desfaz ambas.
+- Senhas, hashes, JWTs, cookies, segredos, tokens e credenciais são removidos defensivamente.
+- Somente ADMIN consulta o Histórico de Atividades; ações de VENDEDOR continuam auditadas.
+- A listagem é ordenada da mais recente para a mais antiga, com página padrão 1, 20 registros e máximo de 100.
+- `AuditLog` é histórico de negócio e não substitui logs técnicos da aplicação.
+
 ## Analytics
 
 - Rankings de produtos usam lucro acumulado; marcas agrupam por marca.

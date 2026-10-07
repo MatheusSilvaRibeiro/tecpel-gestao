@@ -53,14 +53,15 @@ export interface MovementInput {
 }
 
 export interface ProductStore {
-  create(input: ProductInput): Promise<ProductWithStock>;
+  create(input: ProductInput, actorId?: string): Promise<ProductWithStock>;
   list(filters: ProductFilters): Promise<ProductWithStock[]>;
   findById(id: string): Promise<ProductWithStock | null>;
   update(
     id: string,
     input: Partial<ProductInput>,
+    actorId?: string,
   ): Promise<ProductWithStock | null>;
-  deactivate(id: string): Promise<boolean>;
+  deactivate(id: string, actorId?: string): Promise<boolean>;
   registerMovement(
     input: MovementInput,
   ): Promise<{ movement: StockMovement; currentStock: number }>;

@@ -101,12 +101,15 @@ export function createProductsRouter(
       try {
         if (request.file)
           await validateProductImage(request.file.path, request.file.mimetype);
-        const product = await createProduct.execute({
-          ...parse(productSchema, request.body),
-          imageUrl: request.file
-            ? productImageUrl(request.file.filename)
-            : null,
-        });
+        const product = await createProduct.execute(
+          {
+            ...parse(productSchema, request.body),
+            imageUrl: request.file
+              ? productImageUrl(request.file.filename)
+              : null,
+          },
+          request.authUser.id,
+        );
         response
           .status(201)
           .json({ data: { product }, message: null, meta: null });
@@ -187,12 +190,16 @@ export function createProductsRouter(
             'VALIDATION_ERROR',
             'Informe ao menos um campo para atualização.',
           );
-        const product = await updateProduct.execute(productId(request), {
-          ...values,
-          ...(request.file
-            ? { imageUrl: productImageUrl(request.file.filename) }
-            : {}),
-        });
+        const product = await updateProduct.execute(
+          productId(request),
+          {
+            ...values,
+            ...(request.file
+              ? { imageUrl: productImageUrl(request.file.filename) }
+              : {}),
+          },
+          request.authUser.id,
+        );
         response.json({ data: { product }, message: null, meta: null });
       } catch (error) {
         if (request.file)
@@ -203,7 +210,7 @@ export function createProductsRouter(
   );
   router.delete('/:id', authorize('ADMIN'), async (request, response, next) => {
     try {
-      await deactivateProduct.execute(productId(request));
+      await deactivateProduct.execute(productId(request), request.authUser.id);
       response.json({
         data: null,
         message: 'Produto desativado com sucesso.',

@@ -6,6 +6,11 @@ import {
 } from '@prisma/client';
 
 import { AppError } from '../../errors/app-error.js';
+import {
+  AuditService,
+  auditDiff,
+  type AuditWriter,
+} from '../audit/audit-service.js';
 import type {
   MovementInput,
   ProductFilters,
@@ -48,18 +53,40 @@ function mapProduct(product: {
 }
 
 export class PrismaProductStore implements ProductStore {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly audit: AuditWriter = new AuditService(),
+  ) {}
 
-  async create(input: ProductInput) {
-    const product = await this.prisma.product.create({
-      data: {
-        ...input,
-        type: input.type as ProductType,
-        salePrice: new Prisma.Decimal(input.salePrice),
-      },
-      include: withMovements,
+  create(input: ProductInput, actorId?: string) {
+    return this.prisma.$transaction(async (transaction) => {
+      const product = await transaction.product.create({
+        data: {
+          ...input,
+          type: input.type as ProductType,
+          salePrice: new Prisma.Decimal(input.salePrice),
+        },
+        include: withMovements,
+      });
+      const mapped = mapProduct(product);
+      if (actorId)
+        await this.audit.record(transaction, {
+          userId: actorId,
+          action: 'CREATE',
+          entity: 'PRODUCT',
+          entityId: product.id,
+          after: {
+            name: mapped.name,
+            brand: mapped.brand,
+            description: mapped.description,
+            type: mapped.type,
+            salePrice: mapped.salePrice,
+            imageUrl: mapped.imageUrl,
+            active: mapped.active,
+          },
+        });
+      return mapped;
     });
-    return mapProduct(product);
   }
 
   async list(filters: ProductFilters) {
@@ -85,32 +112,77 @@ export class PrismaProductStore implements ProductStore {
     return product ? mapProduct(product) : null;
   }
 
-  async update(id: string, input: Partial<ProductInput>) {
-    const existing = await this.prisma.product.findUnique({
-      where: { id },
-      select: { id: true },
+  update(id: string, input: Partial<ProductInput>, actorId?: string) {
+    return this.prisma.$transaction(async (transaction) => {
+      const existing = await transaction.product.findUnique({ where: { id } });
+      if (!existing) return null;
+      const product = await transaction.product.update({
+        where: { id },
+        data: {
+          ...input,
+          type: input.type as ProductType | undefined,
+          salePrice: input.salePrice
+            ? new Prisma.Decimal(input.salePrice)
+            : undefined,
+        },
+        include: withMovements,
+      });
+      const mapped = mapProduct(product);
+      const diff = auditDiff(
+        {
+          name: existing.name,
+          brand: existing.brand,
+          description: existing.description,
+          type: existing.type,
+          salePrice: existing.salePrice.toFixed(2),
+          imageUrl: existing.imageUrl,
+        },
+        {
+          name: mapped.name,
+          brand: mapped.brand,
+          description: mapped.description,
+          type: mapped.type,
+          salePrice: mapped.salePrice,
+          imageUrl: mapped.imageUrl,
+        },
+      );
+      if (actorId && diff.changed)
+        await this.audit.record(transaction, {
+          userId: actorId,
+          action: 'UPDATE',
+          entity: 'PRODUCT',
+          entityId: id,
+          before: diff.before,
+          after: diff.after,
+        });
+      return mapped;
     });
-    if (!existing) return null;
-    const product = await this.prisma.product.update({
-      where: { id },
-      data: {
-        ...input,
-        type: input.type as ProductType | undefined,
-        salePrice: input.salePrice
-          ? new Prisma.Decimal(input.salePrice)
-          : undefined,
-      },
-      include: withMovements,
-    });
-    return mapProduct(product);
   }
 
-  async deactivate(id: string) {
-    const result = await this.prisma.product.updateMany({
-      where: { id },
-      data: { active: false },
+  deactivate(id: string, actorId?: string) {
+    return this.prisma.$transaction(async (transaction) => {
+      const product = await transaction.product.findUnique({
+        where: { id },
+        select: { id: true, active: true },
+      });
+      if (!product) return false;
+      if (product.active) {
+        await transaction.product.update({
+          where: { id },
+          data: { active: false },
+        });
+        if (actorId)
+          await this.audit.record(transaction, {
+            userId: actorId,
+            action: 'DEACTIVATE',
+            entity: 'PRODUCT',
+            entityId: id,
+            before: { active: true },
+            after: { active: false },
+          });
+      }
+      return true;
     });
-    return result.count > 0;
   }
 
   registerMovement(input: MovementInput) {
@@ -157,6 +229,19 @@ export class PrismaProductStore implements ProductStore {
             createdBy: input.createdBy,
           },
           include: { user: { select: { id: true, name: true } } },
+        });
+        await this.audit.record(transaction, {
+          userId: input.createdBy,
+          action: input.type === 'ENTRY' ? 'STOCK_ENTRY' : 'STOCK_ADJUSTMENT',
+          entity: 'STOCK',
+          entityId: input.productId,
+          metadata: {
+            quantity: input.quantity,
+            ...(input.unitCost ? { unitCost: input.unitCost } : {}),
+            ...(input.note ? { reason: input.note } : {}),
+            previousStock: currentStock,
+            newStock: currentStock + input.quantity,
+          },
         });
         return {
           currentStock: currentStock + input.quantity,

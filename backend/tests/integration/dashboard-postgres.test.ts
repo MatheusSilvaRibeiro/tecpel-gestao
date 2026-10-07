@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import { PrismaClient, UserRole } from '@prisma/client';
 import {
   PostgreSqlContainer,
@@ -11,6 +9,8 @@ import { createApp } from '../../src/app.js';
 import { PrismaUserStore } from '../../src/modules/auth/prisma-user-store.js';
 import { createTokenService } from '../../src/modules/auth/token.js';
 import { PrismaDashboardStore } from '../../src/modules/dashboard/prisma-dashboard-store.js';
+import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 let container: StartedPostgreSqlContainer;
 let prisma: PrismaClient;
@@ -20,53 +20,18 @@ const tokens = createTokenService({
   secret: 'dashboard-integration-secret-32-chars',
   expiresIn: '8h',
 });
-async function migrate(relativePath: string) {
-  const sql = await readFile(
-    fileURLToPath(new URL(relativePath, import.meta.url)),
-    'utf8',
-  );
-  const result = await container.exec([
-    'psql',
-    '-U',
-    container.getUsername(),
-    '-d',
-    container.getDatabase(),
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    sql,
-  ]);
-  if (result.exitCode !== 0) throw new Error(result.stderr);
-}
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:17-alpine')
     .withDatabase('dashboard_test')
     .withUsername('tecpel_test')
     .withPassword('tecpel_test')
     .start();
-  await migrate(
-    '../../prisma/migrations/20260826010000_add_user_auth/migration.sql',
-  );
-  await migrate(
-    '../../prisma/migrations/20260906010000_add_products_stock/migration.sql',
-  );
-  await migrate(
-    '../../prisma/migrations/20260906020000_add_sales/migration.sql',
-  );
-  await migrate(
-    '../../prisma/migrations/20260910010000_add_purchases/migration.sql',
-  );
+  await applyPrismaMigrations(container);
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
 });
 beforeEach(async () => {
-  await prisma.purchaseItem.deleteMany();
-  await prisma.purchase.deleteMany();
-  await prisma.stockMovement.deleteMany();
-  await prisma.saleItem.deleteMany();
-  await prisma.sale.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 afterAll(async () => {
   await prisma?.$disconnect();

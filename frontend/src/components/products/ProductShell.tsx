@@ -5,6 +5,7 @@ import {
   Package,
   ShoppingCart,
   Truck,
+  ClipboardClock,
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -41,6 +42,14 @@ export function ProductShell({ children }: PropsWithChildren) {
                 className="flex items-center gap-2 font-semibold"
               >
                 <Truck className="text-amber-300" /> Compras
+              </Link>
+            )}
+            {user?.role === 'ADMIN' && (
+              <Link
+                to="/audit"
+                className="flex items-center gap-2 font-semibold"
+              >
+                <ClipboardClock className="text-amber-300" /> Histórico
               </Link>
             )}
             <Link

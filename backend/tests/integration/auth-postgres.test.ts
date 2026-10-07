@@ -1,6 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-
 import { PrismaClient, UserRole } from '@prisma/client';
 import {
   PostgreSqlContainer,
@@ -14,6 +11,8 @@ import { createApp } from '../../src/app.js';
 import { hashPassword } from '../../src/modules/auth/password.js';
 import { PrismaUserStore } from '../../src/modules/auth/prisma-user-store.js';
 import { createTokenService } from '../../src/modules/auth/token.js';
+import { applyPrismaMigrations } from './helpers/apply-prisma-migrations.js';
+import { resetIntegrationDatabase } from './helpers/reset-integration-database.js';
 
 const cookieName = 'tecpel_auth';
 const tokenService = createTokenService({
@@ -46,27 +45,7 @@ beforeAll(async () => {
     .withPassword('tecpel_test')
     .start();
 
-  const migrationPath = fileURLToPath(
-    new URL(
-      '../../prisma/migrations/20260826010000_add_user_auth/migration.sql',
-      import.meta.url,
-    ),
-  );
-  const migration = await readFile(migrationPath, 'utf8');
-  const migrationResult = await container.exec([
-    'psql',
-    '-U',
-    container.getUsername(),
-    '-d',
-    container.getDatabase(),
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    migration,
-  ]);
-  if (migrationResult.exitCode !== 0) {
-    throw new Error(migrationResult.stderr);
-  }
+  await applyPrismaMigrations(container);
 
   process.env.DATABASE_URL = container.getConnectionUri();
   prisma = new PrismaClient();
@@ -79,7 +58,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await prisma.user.deleteMany();
+  await resetIntegrationDatabase(prisma);
 });
 
 afterAll(async () => {
