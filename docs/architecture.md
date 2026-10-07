@@ -1,5 +1,9 @@
 # Arquitetura
 
+## Produção e operação
+
+A implantação de referência usa Nginx para servir a SPA e encaminhar `/api` ao Express, ambos em rede Docker interna com PostgreSQL. Banco e uploads possuem volumes separados. Migrations e bootstrap do primeiro ADMIN são comandos explícitos e não fazem parte do startup da aplicação. `/health` mede liveness e `/ready` confirma acesso ao banco. Consulte [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Relatórios operacionais
 
 O módulo `reports` é um read model independente. O PostgreSQL executa filtros, agregações, ordenação e paginação; o serviço aplica a visibilidade ADMIN/VENDEDOR e gera CSV. Datas `YYYY-MM-DD` são dias civis completos em `America/Sao_Paulo`.

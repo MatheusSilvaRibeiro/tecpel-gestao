@@ -1,0 +1,122 @@
+name: tecpel-production
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB deve ser definido}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER deve ser definido}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD deve ser definido}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: production
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL deve ser definida}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET deve ser definido}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-tecpel_auth}
+      CORS_ORIGIN: ${CORS_ORIGIN:?CORS_ORIGIN deve ser definido}
+      STORE_TIMEZONE: ${STORE_TIMEZONE:-America/Sao_Paulo}
+      UPLOAD_DIR: /app/backend/uploads/products
+      APP_VERSION: ${APP_VERSION:-development}
+      JSON_BODY_LIMIT: ${JSON_BODY_LIMIT:-100kb}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-900000}
+      LOGIN_RATE_LIMIT_MAX: ${LOGIN_RATE_LIMIT_MAX:-5}
+    expose: ['3333']
+    volumes:
+      - product_uploads:/app/backend/uploads/products
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3333/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: production
+      args:
+        VITE_API_URL: /api
+    restart: unless-stopped
+    ports:
+      - '${FRONTEND_PORT:-8080}:80'
+    networks: [internal]
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget -qO- http://127.0.0.1/health >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: migration
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL deve ser definida}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET deve ser definido}
+      CORS_ORIGIN: ${CORS_ORIGIN:?CORS_ORIGIN deve ser definido}
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bootstrap-admin:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: migration
+    command: ['pnpm', '--filter', '@tecpel/backend', 'bootstrap:admin']
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL deve ser definida}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  product_uploads:

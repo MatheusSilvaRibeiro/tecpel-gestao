@@ -90,13 +90,11 @@ export function createPurchasesRouter(
         ...body,
         createdById: request.authUser.id,
       });
-      response
-        .status(201)
-        .json({
-          data: { purchase },
-          message: 'Compra registrada com sucesso.',
-          meta: null,
-        });
+      response.status(201).json({
+        data: { purchase },
+        message: 'Compra registrada com sucesso.',
+        meta: null,
+      });
     } catch (error) {
       next(error);
     }
