@@ -17,6 +17,7 @@ export default defineConfig({
         'src/modules/purchases/prisma-purchase-store.ts',
         'src/modules/analytics/prisma-analytics-repository.ts',
         'src/modules/audit/prisma-audit-repository.ts',
+        'src/modules/reports/prisma-reports-repository.ts',
       ],
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },

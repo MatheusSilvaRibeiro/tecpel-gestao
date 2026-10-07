@@ -38,6 +38,9 @@ import { createAnalyticsRouter } from './modules/analytics/routes.js';
 import type { AuditRepository } from './modules/audit/audit-repository.js';
 import { PrismaAuditRepository } from './modules/audit/prisma-audit-repository.js';
 import { createAuditRouter } from './modules/audit/routes.js';
+import type { ReportsRepository } from './modules/reports/reports-repository.js';
+import { PrismaReportsRepository } from './modules/reports/prisma-reports-repository.js';
+import { createReportsRouter } from './modules/reports/routes.js';
 
 interface AppDependencies {
   userStore: UserStore;
@@ -50,6 +53,7 @@ interface AppDependencies {
   purchaseStore?: PurchaseStore;
   analyticsRepository?: AnalyticsRepository;
   auditRepository?: AuditRepository;
+  reportsRepository?: ReportsRepository;
   storeTimezone?: string;
   now?: () => Date;
 }
@@ -168,6 +172,15 @@ export function createApp(dependencies: AppDependencies) {
       '/audit',
       createAuditRouter(dependencies.auditRepository, authenticate),
     );
+  if (dependencies.reportsRepository)
+    app.use(
+      '/reports',
+      createReportsRouter(
+        dependencies.reportsRepository,
+        authenticate,
+        dependencies.storeTimezone ?? 'America/Sao_Paulo',
+      ),
+    );
 
   app.use(notFound);
   app.use(errorHandler);
@@ -192,6 +205,7 @@ export const app = createApp({
   purchaseStore: new PrismaPurchaseStore(prisma),
   analyticsRepository: new PrismaAnalyticsRepository(prisma),
   auditRepository: new PrismaAuditRepository(prisma),
+  reportsRepository: new PrismaReportsRepository(prisma),
   storeTimezone: env.STORE_TIMEZONE,
   uploadDirectory: path.resolve('uploads/products'),
 });

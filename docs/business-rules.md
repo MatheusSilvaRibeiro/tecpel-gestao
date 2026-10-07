@@ -1,5 +1,14 @@
 # Regras de negócio conhecidas
 
+## Relatórios
+
+- Todo relatório exige período explícito, limitado a 366 dias e interpretado em `America/Sao_Paulo`.
+- Vendas usam valores históricos congelados em `Sale` e `SaleItem`.
+- VENDEDOR consulta vendas e estoque, mas nunca recebe custo, lucro ou margem.
+- Compras e seus valores são exclusivos de ADMIN.
+- Listagens são paginadas no banco; CSV respeita os mesmos filtros e permissões.
+- Consultas e downloads não geram `AuditLog`.
+
 ## Auditoria
 
 - Criação, alteração e desativação de produto são auditadas.

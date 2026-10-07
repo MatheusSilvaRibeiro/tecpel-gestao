@@ -1,5 +1,11 @@
 # Arquitetura
 
+## Relatórios operacionais
+
+O módulo `reports` é um read model independente. O PostgreSQL executa filtros, agregações, ordenação e paginação; o serviço aplica a visibilidade ADMIN/VENDEDOR e gera CSV. Datas `YYYY-MM-DD` são dias civis completos em `America/Sao_Paulo`.
+
+Dashboard é a visão rápida atual; Analytics produz indicadores e insights; Reports oferece conferência histórica e exportação. O CSV usa UTF-8 com BOM, delimitador ponto e vírgula e escaping seguro para Excel brasileiro. XLSX e PDF ficam fora desta entrega.
+
 ## Auditoria de negócio
 
 O módulo `audit` registra eventos administrativos relevantes no `AuditLog`. `AuditService` centraliza sanitização defensiva, cálculo de diferenças e persistência; as operações de produto, estoque manual, venda e compra registram o evento dentro da mesma transação PostgreSQL. Dessa forma, a alteração e seu histórico confirmam ou falham juntas.

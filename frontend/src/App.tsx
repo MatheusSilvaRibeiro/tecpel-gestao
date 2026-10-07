@@ -19,6 +19,7 @@ import { NewPurchasePage } from './pages/NewPurchasePage';
 import { PurchaseDetailPage } from './pages/PurchaseDetailPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AuditPage } from './pages/AuditPage';
+import { ReportsPage } from './pages/ReportsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,14 @@ export function AppRoutes() {
           <AdminRoute>
             <AuditPage />
           </AdminRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <ReportsPage />
+          </ProtectedRoute>
         }
       />
       <Route

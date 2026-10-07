@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Truck,
   ClipboardClock,
+  FileBarChart,
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -57,6 +58,12 @@ export function ProductShell({ children }: PropsWithChildren) {
               className="flex items-center gap-2 font-semibold"
             >
               <BarChart3 className="text-amber-300" /> Analytics
+            </Link>
+            <Link
+              to="/reports"
+              className="flex items-center gap-2 font-semibold"
+            >
+              <FileBarChart className="text-amber-300" /> Relatórios
             </Link>
           </nav>
           <button

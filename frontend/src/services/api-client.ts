@@ -19,6 +19,7 @@ export class ApiError extends Error {
 }
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+export const apiFileUrl = (path: string) => `${apiUrl}${path}`;
 
 export async function apiRequestResponse<T>(
   path: string,

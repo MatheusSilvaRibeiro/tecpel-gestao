@@ -1,5 +1,7 @@
 # Visão do produto
 
+Relatórios operacionais por período complementam dashboard e analytics com conferência histórica e exportação CSV de vendas, compras e estoque.
+
 ## TecPel Gestão
 
 O TecPel Gestão será um sistema web responsivo para centralizar a operação de vendas de perfumes e cremes da TecPel. O produto deve substituir controles dispersos por uma visão simples e confiável do negócio, adequada tanto ao celular quanto ao computador.

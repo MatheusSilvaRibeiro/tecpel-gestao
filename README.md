@@ -1,5 +1,7 @@
 # TecPel Gestão
 
+> Relatórios operacionais permitem consultar vendas, compras e movimentações por período e exportar CSV UTF-8 compatível com Excel. Custos, lucros e compras permanecem exclusivos de ADMIN.
+
 > O Histórico de Atividades registra operações relevantes de produto, estoque, venda e compra com usuário, data e alterações. A consulta é exclusiva para ADMIN, paginada e não substitui logs técnicos da aplicação.
 
 > Analytics transforma vendas, compras e estoque em rankings, margem ponderada, capital investido, alertas e séries de 30 dias. O backend remove custos, lucros, capital e margens das respostas para VENDEDOR.
